@@ -6,7 +6,16 @@ if ('5' != substr(PHP_VERSION, 0, 1)) {
     exit("运行环境要求PHP5支持");
 }
 
-define('IN_QA', true);
+defined('IN_QA') or  define('IN_QA', true);
+defined('ONEAPI_PATH') ||  define('ONEAPI_PATH', dirname(__FILE__).'/');
+
+if( !defined('ROOT_PATH') ) define('ROOT_PATH', realpath('./').DIRECTORY_SEPARATOR);
+if( !defined('BASE_PATH') ) define('BASE_PATH', realpath('./').DIRECTORY_SEPARATOR);
+if( !defined('CONFIG_PATH') ) define('CONFIG_PATH', BASE_PATH.'data/config/');
+if( !defined('ROOT_URL') ) define('ROOT_URL',  rtrim(dirname($_SERVER["SCRIPT_NAME"]), '\\/').'/');
+if( !defined('PUBLIC_URL') ) define('PUBLIC_URL', ROOT_URL . 'public/');
+
+
 define('MAGIC_QUOTES_GPC', (function_exists('get_magic_quotes_gpc') && get_magic_quotes_gpc()) || @ini_get('magic_quotes_sybase'));
 define('TIMESTAMP', time());
 //关闭自动加上的引号，一是为了高效，而是为了程序的兼容性，【数据库操作的地方一定要做特殊处理！！!】
