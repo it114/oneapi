@@ -2,42 +2,35 @@
 /**
  * quick app framework
  */
-if ('5' != substr(PHP_VERSION, 0, 1)) {
+if ('5' > substr(PHP_VERSION, 0, 1)) {
     exit("运行环境要求PHP5支持");
 }
 
-defined('IN_QA') or  define('IN_QA', true);
-defined('ONEAPI_PATH') ||  define('ONEAPI_PATH', dirname(__FILE__).'/');
-
-if( !defined('ROOT_PATH') ) define('ROOT_PATH', realpath('./').DIRECTORY_SEPARATOR);
-if( !defined('BASE_PATH') ) define('BASE_PATH', realpath('./').DIRECTORY_SEPARATOR);
-if( !defined('CONFIG_PATH') ) define('CONFIG_PATH', BASE_PATH.'data/config/');
-if( !defined('ROOT_URL') ) define('ROOT_URL',  rtrim(dirname($_SERVER["SCRIPT_NAME"]), '\\/').'/');
-if( !defined('PUBLIC_URL') ) define('PUBLIC_URL', ROOT_URL . 'public/');
-
+defined('IN_ONEAPI') or  define('IN_ONEAPI', true);
+defined('ROOT_PATH') || define('ROOT_PATH', realpath('./').DIRECTORY_SEPARATOR);
+defined('CORE_PATH') ||  define('CORE_PATH', ROOT_PATH.'core'.DIRECTORY_SEPARATOR);
+defined('LIBRARY_PATH') ||  define('LIBRARY_PATH', ROOT_PATH.'library'.DIRECTORY_SEPARATOR);
+defined('APPS_PATH') ||  define('APPS_PATH', ROOT_PATH.'apps'.DIRECTORY_SEPARATOR);
+defined('STORAGE_PATH') ||  define('STORAGE_PATH', ROOT_PATH.'apps'.DIRECTORY_SEPARATOR);
 
 define('MAGIC_QUOTES_GPC', (function_exists('get_magic_quotes_gpc') && get_magic_quotes_gpc()) || @ini_get('magic_quotes_sybase'));
 define('TIMESTAMP', time());
+define('STARTTIME', getmicrotime());
 //关闭自动加上的引号，一是为了高效，而是为了程序的兼容性，【数据库操作的地方一定要做特殊处理！！!】
 @set_magic_quotes_runtime(0);
-
 //全局范围可访问的数组
 $_G_VARS = array();
-
 //核心配置文件 $_gconfig 系统配置变量
-$configfile = ROOT_PATH.'/storage/data/config/config.inc.php';
-
+$configfile = STORAGE_PATH.'config/config.inc.php';
 if(!file_exists($configfile)) {
     exit('配置文件缺少，请检查');
 }
-
 require $configfile;
-
 //加载核心函数
-require_once ROOT_PATH.'/core/classes/quickapp.class.php';
+require_once CORE_PATH.'classes/oneapi.class.php';
 ClassLoader::instance()->load('/core/function/common.func.php');
 
-define('STARTTIME', getmicrotime());
+
 
 $_G_VARS['gconfig'] = $_gconfig;
 $_G_VARS['timestamp'] = TIMESTAMP;

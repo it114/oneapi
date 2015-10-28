@@ -1,5 +1,5 @@
 <?php
-defined('IN_QA') or exit('Access Denied');
+defined('IN_ONEAPI') or exit('Access Denied');
 
 $_gconfig = array();
 $_gconfig['db']['db_type'] = 'mysql';
