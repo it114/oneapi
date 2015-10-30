@@ -1,5 +1,4 @@
 <?php
-defined('IN_ONEAPI') or exit('Access Denied');
 
 $_gconfig = array();
 $_gconfig['db']['db_type'] = 'mysql';
@@ -32,10 +31,8 @@ $_gconfig['upload']['audio']['limit'] = 5000;
 $_gconfig['site']['url']['default_app']     = 'user';
 $_gconfig['site']['url']['default_ctrl']    = 'public';
 $_gconfig['site']['url']['default_act']     = 'login';
-//缓存
-$_gconfig['cache']['file']['cache_path'] ='/storage/cache/file/';//必须 以 '/'结尾
-$_gconfig['cache']['file']['expire'] = 36000; //10分钟
-//和外界通信的客户端的配置
-$_gconfig['site']['client']['plat'] = array('main.api.service'=>array('enable'=>true,'token'=>'','des'=>'和主API通信的配置'));
+
+return $_gconfig;
+
 
 
