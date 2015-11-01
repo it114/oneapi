@@ -3,7 +3,7 @@
 namespace Core\util;
 
 class Config 
-{
+{   
     protected $_level;//配置文件级别，系统级别还是app级别。app可以覆盖系统级别的。可选值 app 、sys
     protected $_env;//开发环境是发布环境还是调试环境 有两种 dev 和 release
     protected static $_configValues; //全局的配置
@@ -15,29 +15,36 @@ class Config
             trigger_error('env is invalid ,require app or sys .');
         }
         $this->_env = $env;
-        $this->init();
+        $this->loadDefaultConfig();
     }
     
-    protected function init(){
+    public function loadDefaultConfig(){
         //load system config file content .
-        $sysFile = STORAGE_PATH.'config'.DIRECTORY_SEPARATOR.'config.php';
+        $sysFile = STORAGE_PATH.'config'.DIRECTORY_SEPARATOR.'config.php'; 
         if(is_file($sysFile)) {
-            $content =  require $sysFile;
+            $content =  include  $sysFile;
             if(array_key_exists($this->_env, $content)) {
                self::$_configValues = $content[$this->_env]; 
             }
+        } else {
+            echo 'fdsfds 113';
         }
-            
+        print_r( self::$_configValues);
+    }
+    
+    public function loadAppConfig() { 
         $file = APPS_PATH.APP_NAME.DIRECTORY_SEPARATOR.'config.php';
         if(is_file($file)) {
             $content =  require $file;
             if(array_key_exists($this->_env, $content)) {
-                $appConfig = $content[$this->_env]; 
+                $appConfig = $content[$this->_env];
                 if(isset(self::$_configValues)) {
                     //app中的配置覆盖系统的默认配置不支持二维数组
                     foreach($appConfig as $k=>$v){
                         if(isset(self::$_configValues[$k])) {
                             self::$_configValues[$k] = $v;//app配置覆盖系统配置
+                        } else {
+                            //do nothing .
                         }
                     }
                 } else {
@@ -64,7 +71,7 @@ class Config
         return true;
     }
     
-    public static function get($key=NULL){
+    public static function get($key=NULL){print_r(self::$_configValues);die;
         if( empty($key)) return self::$_configValues;
         $arr = explode('.', $key);
         switch(count($arr)){

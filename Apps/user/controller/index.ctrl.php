@@ -1,16 +1,18 @@
 <?php
+namespace Apps\user\controller;
 
+use \Core\controller\ApiController;
 
-class indexController extends controller{
+class indexController extends ApiController{
     
 	//初始化action白名单
-	public function init_actions(){
-		$this->actions[] =  'index';
+	public function _initActions(){
+		$this->whiteActions[] = 'index';
         
 	}
 	
-	public function pay(){
-	    //hbid ,hbtoken,hbmoney~,limitId
+	public function index(){
+	   echo 'hello';
 	}
     
     
