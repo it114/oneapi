@@ -1,7 +1,6 @@
 <?php
 namespace Core\controller;
 
-use Core\util\Config;
 use Core\util\Response;
 
 /**
@@ -14,15 +13,15 @@ abstract  class AbstractController
 
     protected $whiteActions = array();
     
-    protected function _initActions();
+    abstract public function _initActions();
     
-    protected function _valid_action( $action ) {
+    public function _valid_action( $action ) {
         if( !in_array( $action, $this->whiteActions) ) {
-            trigger_error( 'action:'.$action.' is not exists !' );
+            exit( 'action:'.$action.' is not exists !' );
         }
     }
     
-    protected function _initAuth();
+    abstract public  function _initAuth();
     
     /**
      * 返回字符串

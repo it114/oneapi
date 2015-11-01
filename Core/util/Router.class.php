@@ -2,7 +2,7 @@
 
 namespace Core\util;
 
-class Route 
+class Router
 {
     public   $app;
     public   $controller;
@@ -16,6 +16,7 @@ class Route
     public function init(){
         if(empty($this->routeType)) {//默认兼容模式
            $route = Request::getGet('r'); 
+           $route = explode('/', $route);
            $len  = count($route);
            if($len == 1){
                $this->app = $route[0];
@@ -32,7 +33,6 @@ class Route
         } else if($this->routeType == 'pathinfo ') {//其他方式。。。
             
         }
-        die('fdsfdsfdsdsds');
         //统一处理
         if(!$this->app) {//app
             $this->app = 'user';

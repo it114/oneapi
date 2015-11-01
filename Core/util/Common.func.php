@@ -18,11 +18,6 @@ function getip() {
     return $ip;
 }
 
-function getmicrotime() {
-    list($usec, $sec) = explode(" ", microtime());
-    return (( float )$usec + ( float )$sec);
-}
-
 function dump($data = null, $option = false) {
     //设置页面编码
     if (!headers_sent()) {

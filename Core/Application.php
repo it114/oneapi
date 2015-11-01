@@ -16,32 +16,34 @@ class Application {
         $config = new Config((DEBUG)?'dev':'release');
         //初始化环境
         $this->_initEnv();
-        
+        //加载通用函数
+        Loader::loadFile(ROOT_PATH.'Core/util/Common.func.php');
         //路由,默认r=app/controller/action形式
-        $router = new \Core\util\Route();
+        $router = new \Core\util\Router();
         $router->init();
         $config->loadAppConfig();
     }
     
     public function run() {
         
-        $controller = '\Apps\\'. APP_NAME .'\controller\\'. CONTROLLER_NAME;
+        $controller = '\Apps\\'. APP_NAME .'\controller\\'.ucfirst( CONTROLLER_NAME );
         if( !class_exists($controller) ) {
             throw new \Exception("Controller '{$controller}' not found", 404);
         }
         
         $obj = new $controller();
-        if( !method_exists($obj, ACTION_NAME) ){
+        $action = ACTION_NAME;
+        if( !method_exists($obj, $action) ){
             throw new \Exception("Action '{$controller}::{ACTION_NAME}()' not found", 404);
         }
         $obj->_initActions(); //初始化白名单
-        $obj->_valid_action(ACTION_NAME);//验证 操作是否 在白名单
+        $obj->_valid_action($action);//验证 操作是否 在白名单
         $obj->_initAuth();//权限
         $obj ->$action();//执行action
-        
+          
     } 
     
-    protected function _initEnv(){die('_initEnv  111 ');
+    protected function _initEnv(){
         //时区设置,默认为中国(北京时区)
         date_default_timezone_set(Config::get('setting.timezone'));
         //设置异常处理
@@ -49,8 +51,7 @@ class Application {
         //关闭魔术变量，提高PHP运行效率
         if (get_magic_quotes_runtime()) {
             @set_magic_quotes_runtime(0);
-        }
-        
+        } 
         if (DEBUG) {
             ini_set('display_errors', 'on');   //正式环境关闭错误输出
             if (substr(PHP_VERSION, 0, 3) == "5.3") {
@@ -66,10 +67,6 @@ class Application {
     protected function _exception($exception) {
         echo $exception->__toString();
     }
-    
-    
-    
-    
     
 }
 
@@ -104,7 +101,7 @@ class Loader {
             return self::loadFile(self::$class_map[$class]);
          }
          //最简单的自动加载
-         $class = str_replace('\\', '/', $class) . '.class.php';
+         $class = ROOT_PATH.str_replace('\\', '/', $class) . '.class.php';
          self::loadFile($class);
 //          $prefix_name =  strstr($class, '\\', true);
 //          if(isset(self::$namespace_map[$prefix_name])) {

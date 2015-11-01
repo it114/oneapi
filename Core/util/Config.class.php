@@ -12,7 +12,7 @@ class Config
     public function __construct($env) 
     {
         if(!in_array($env, array('dev','release'))) {
-            trigger_error('env is invalid ,require app or sys .');
+            trigger_error('env is invalid ,require dev or release .');
         }
         $this->_env = $env;
         $this->loadDefaultConfig();
@@ -22,14 +22,11 @@ class Config
         //load system config file content .
         $sysFile = STORAGE_PATH.'config'.DIRECTORY_SEPARATOR.'config.php'; 
         if(is_file($sysFile)) {
-            $content =  include  $sysFile;
+            $content =  include  $sysFile; 
             if(array_key_exists($this->_env, $content)) {
                self::$_configValues = $content[$this->_env]; 
             }
-        } else {
-            echo 'fdsfds 113';
         }
-        print_r( self::$_configValues);
     }
     
     public function loadAppConfig() { 
@@ -71,7 +68,7 @@ class Config
         return true;
     }
     
-    public static function get($key=NULL){print_r(self::$_configValues);die;
+    public static function get($key=NULL){
         if( empty($key)) return self::$_configValues;
         $arr = explode('.', $key);
         switch(count($arr)){

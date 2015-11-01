@@ -9,9 +9,12 @@ namespace Core\controller;
  */
 class ApiController  extends  AbstractController{
     
-    protected function _initAuth(){
-        parent::_initAuth();
+    public function _initAuth(){
         //TODO 
+    }
+    
+    public function _initActions(){
+        
     }
     
     
