@@ -9,6 +9,7 @@ $retConfig = array(
             'db_port'=> 3306,
             'db_name' => 'oneapi',
             'charset'=>'utf8',
+            'presistent'=>true,//pdo是否为持久链接
             'table_prefix' => '',
         ),
         'setting'=>array(
