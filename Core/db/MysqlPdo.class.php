@@ -1,6 +1,6 @@
 <?php
 namespace Core\db;
-use \PDO,\PDOException,\Exception,\Core\Config;
+use \PDO,\PDOException,\Exception,\Core\util\Config;
 /**
  * 数据库驱动类
  * 底层的数据库链接 和sql执行 
