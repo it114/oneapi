@@ -18,7 +18,6 @@ class Db{
 		$this->pre = $this->config['table_prefix'];	//数据表前缀
 		//判断是否支持主从
 		$this->slaveDb = isset($this->config['db_slave']) && !empty($this->config['db_slave']);
-		
     }
     //获取从数据库链接
     private function readLink() {
@@ -40,7 +39,7 @@ class Db{
                     self::$readLink = self::getInstance($config);                    
                     if(self::$readLink->success()){//失败退出本次链接，进入下一个链接
                         return self::$readLink;
-                    }else {//成功返回链接
+                    } else {//成功返回链接
                         continue;
                     }
                 }
@@ -94,11 +93,11 @@ class Db{
 	public function table($table, $ignorePre = false) {	
 		$this->options['table'] = '';		
 		if (is_array($table)) {			
-			foreach ($table as $key=>$val){
+			foreach ($table as $key=>$val) {
 				if (is_numeric($key)) {
 					//array('table1','table2'); 转为pre_table1 table1,pre_table2 table2
 					$this->options['table'] .= $ignorePre ? "$val $val ," : $this->pre."$val $val ,";
-				}else {
+				} else {
 					//array('table1'=>'abbr1','table2'=>'abbr2'); 转为pre_table1 abbr1,pre_table2 abbr2
 					$this->options['table'] .= $ignorePre ? "$key $val ," :$this->pre."$key $val ,";
 				}				
@@ -109,6 +108,7 @@ class Db{
 		}
 		return $this;
 	}
+	
 	public function field($field='*'){
 	    $tempField = array();
 	    $this->options['field'] = '*';
@@ -134,7 +134,7 @@ class Db{
             $this->options[$method] = $args[0];	//接收数据			
 			return $this;	//返回对象，连贯查询
         } else{
-			throw new Exception($method . '方法在Model.class.php类中没有定义');
+			throw new \Exception($method . '方法在Model.class.php类中没有定义');
 		}
     }
 	
@@ -309,7 +309,7 @@ class Db{
 	
 	//读取缓存
 	private  function _readCache() {
-		isset($this->options['cache']) or $this->options['cache'] = $this->config['DB_CACHE_TIME'];
+		isset($this->options['cache']) or $this->options['cache'] = $this->config['default_db_cache_time'];
 		//缓存时间为0，不读取缓存
 		if ($this->options['cache'] == 0)
 			return false;

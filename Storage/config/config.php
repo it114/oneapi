@@ -1,6 +1,9 @@
 <?php
 $retConfig = array(
     'dev'=>array(
+        'cache'=>array(
+            'default_db_cache_time'=>300,//数据库读取数据默认缓存 5分钟
+        ),
         'db'=>array(//主库配置
             'db_type'=>'mysql',
             'db_driver'=>'pdo',
