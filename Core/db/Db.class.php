@@ -1,372 +1,137 @@
 <?php
+// +----------------------------------------------------------------------
+// | ThinkPHP [ WE CAN DO IT JUST THINK IT ]
+// +----------------------------------------------------------------------
+// | Copyright (c) 2006-2014 http://thinkphp.cn All rights reserved.
+// +----------------------------------------------------------------------
+// | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
+// +----------------------------------------------------------------------
+// | Author: liu21st <liu21st@gmail.com>
+// +----------------------------------------------------------------------
+
 namespace Core\db;
 use Core\util\Config;
-//模型类，加载了外部的数据库驱动类和缓存类
-class Db{
-    public static $readLink = NULL; // 从数据库操作对象
-    public static $writeLink = NULL; // 主数据库操作对象
-    public $slaveDb = FALSE;
-	public $cache = NULL;	//缓存对象
-	public $sql = '';	//sql语句，主要用于输出构造成的sql语句
-	public  $pre = '';	//表前缀，主要用于在其他地方获取表前缀
-	public $config =array(); //配置
-    protected $options = array(); // 查询表达式参数	
-	
-    public function __construct( $config = array() ) {
-		$this->config = array_merge(Config::get('db'), $config);	//参数配置	
-		$this->options['field'] = '*';	//默认查询字段
-		$this->pre = $this->config['table_prefix'];	//数据表前缀
-		//判断是否支持主从
-		$this->slaveDb = isset($this->config['db_slave']) && !empty($this->config['db_slave']);
-    }
-    //获取从数据库链接
-    private function readLink() {
-        if( isset( self::$readLink ) ) {
-            return self::$readLink;
-        } else {
-            if( !$this->slaveDb ) {
-                return $this->writeLink();
-            } else {
-                $slave_count = count($this->config['db_slave']);
-                //遍历所有从机
-                for($i = 0; $i < $slave_count; $i++) {
-                    $db_all[] = array_merge($this->config, $this->config['db_slave'][$i]);
-                }                
-                //随机选择一台从机连接
-                $rand =  mt_rand(0, $slave_count-1);
-                array_unshift($db_all, $db_all[$rand]);
-                foreach($db_all as $config) {
-                    self::$readLink = self::getInstance($config);                    
-                    if(self::$readLink->success()){//失败退出本次链接，进入下一个链接
-                        return self::$readLink;
-                    } else {//成功返回链接
-                        continue;
-                    }
-                }
-                //如果全部没有链接成功，调用主数据库
-                return $this->writeLink();                
+/**
+ * ThinkPHP 数据库中间层实现类
+ */
+class Db {
+
+    static private  $instance   =  array();     //  数据库连接实例
+    static private  $_instance  =  null;   //  当前数据库连接实例
+
+    /**
+     * 取得数据库类实例
+     * @static
+     * @access public
+     * @param mixed $config 连接配置
+     * @return Object 返回数据库驱动类
+     */
+    static public function getInstance($config=array()) {
+        $md5    =   md5(serialize($config));
+        if(!isset(self::$instance[$md5])) {
+            // 解析连接参数 支持数组和字符串
+            $options    =   self::parseConfig($config);
+            // 兼容mysqli
+            if('mysqli' == $options['type']) $options['type']   =   'mysql';
+            // 如果采用lite方式 仅支持原生SQL 包括query和execute方法
+            $class  =   !empty($options['lite'])?  'Think\Db\Lite' :   'Think\\Db\\Driver\\'.ucwords(strtolower($options['type']));
+            if(class_exists($class)){
+                self::$instance[$md5]   =   new $class($options);
+            }else{
+                // 类没有定义
+                //TODO E(L('_NO_DB_DRIVER_').': ' . $class);
             }
         }
+        self::$_instance    =   self::$instance[$md5];
+        return self::$_instance;
     }
     
-    //获取主数据库链接
-    private function writeLink() {
-        if( isset( self::$writeLink ) ) {
-            return self::$writeLink;
-        } else{
-            self::$writeLink = self::getInstance($this->config);
-            if(self::$writeLink->success()){//成功返回链接
-                return self::$writeLink;
-            }else {//失败输出错误
-                self::$writeLink->error();
+    /**
+     * 数据库连接参数解析
+     * @static
+     * @access private
+     * @param mixed $config
+     * @return array
+     */
+    static private function parseConfig($config){
+        if(!empty($config)){
+            if(is_string($config)) {
+                return self::parseDsn($config);
             }
+            $config =   array_change_key_case($config);
+            $config = array (
+                'type'          =>  $config['db_type'],
+                'username'      =>  $config['db_user'],
+                'password'      =>  $config['db_pwd'],
+                'hostname'      =>  $config['db_host'],
+                'hostport'      =>  $config['db_port'],
+                'database'      =>  $config['db_name'],
+                'dsn'           =>  isset($config['db_dsn'])?$config['db_dsn']:null,
+                'params'        =>  isset($config['db_params'])?$config['db_params']:null,
+                'charset'       =>  isset($config['db_charset'])?$config['db_charset']:'utf8',
+                'deploy'        =>  isset($config['db_deploy_type'])?$config['db_deploy_type']:0,
+                'rw_separate'   =>  isset($config['db_rw_separate'])?$config['db_rw_separate']:false,
+                'master_num'    =>  isset($config['db_master_num'])?$config['db_master_num']:1,
+                'slave_no'      =>  isset($config['db_slave_no'])?$config['db_slave_no']:'',
+                'debug'         =>  isset($config['db_debug'])?$config['db_debug']:APP_DEBUG,
+                'lite'          =>  isset($config['db_lite'])?$config['db_lite']:false,
+            );
+        }else {
+            $config = array (
+                'type'          =>  Config::get('db_type'),
+                'username'      =>  Config::get('db_username'),
+                'password'      =>  Config::get('db_password'),
+                'hostname'      =>  Config::get('db_host'),
+                'hostport'      =>  Config::get('db_port'),
+                'database'      =>  Config::get('db_name'),
+                'dsn'           =>  Config::get('db_dsn'),
+                'params'        =>  Config::get('db_params'),
+                'charset'       =>  Config::get('db_charset'),
+                'deploy'        =>  Config::get('db_deploy_type'),
+                'rw_separate'   =>  Config::get('db_rw_separate'),
+                'master_num'    =>  Config::get('db_master_num'),
+                'slave_no'      =>  Config::get('db_slave_no'),
+                'debug'         =>  DEBUG,
+                'lite'          =>  Config::get('db_lite'),
+            );
         }
-    }    
-	
-	/**
-	 * 取得数据库类实例
-	 * 采用单例模式，每个配置只生成一个实例防止重复建立数据连接
-	 * @static
-	 * @access public
-	 * @return mixed 返回数据库驱动类
-	 */
-	public static function getInstance($config = array()) {	    
-	    static $_instance	=	array();
-	    $dbkey	=	md5(json_encode($config));
-	    if(!isset($_instance[$dbkey])){
-	        $type = strtolower($config['db_type']);
-	        $driver = strtolower($config['db_driver']);
-	        $dbDriver = '\Core\db\\'.ucfirst($type).ucfirst($driver);//定义数据驱动类名，包括命名空间
-	        $_instance[$dbkey] = new $dbDriver( $config );	//实例化数据库驱动类
-	    }
-	    return $_instance[$dbkey];
-	}
-	
-	/**
-	 * 设置表，$ignorePre为true的时候忽略表前缀，false时添加表前缀，默认false
-	 *
-	 * @param unknown_type $table
-	 * @param unknown_type $ignorePre
-	 * @return unknown
-	 * array('table1'=>'t1','table2'=>'t2') 变成table1 t1,table1 t2
-	 */
-	public function table($table, $ignorePre = false) {	
-		$this->options['table'] = '';		
-		if (is_array($table)) {			
-			foreach ($table as $key=>$val) {
-				if (is_numeric($key)) {
-					//array('table1','table2'); 转为pre_table1 table1,pre_table2 table2
-					$this->options['table'] .= $ignorePre ? "$val $val ," : $this->pre."$val $val ,";
-				} else {
-					//array('table1'=>'abbr1','table2'=>'abbr2'); 转为pre_table1 abbr1,pre_table2 abbr2
-					$this->options['table'] .= $ignorePre ? "$key $val ," :$this->pre."$key $val ,";
-				}				
-			}
-			$this->options['table'] = substr($this->options['table'],0,-1);//去除最后的逗号 ,
-		}else {
-			$this->options['table'] .= $ignorePre ? $table : $this->config['table_prefix'].$table;
-		}
-		return $this;
-	}
-	
-	public function field($field='*'){
-	    $tempField = array();
-	    $this->options['field'] = '*';
-	    if (is_array($field)) {
-	        foreach ($field as $key=>$val){
-	            if (is_numeric($key)) {	                
-	                $tempField[] = $val;
-	            }else {	                
-	                $tempField[] = $key .' as '. $val;
-	            }
-	        }
-	        $this->options['field'] = implode(',', $tempField);//去除最后的逗号 ,
-	    }else {
-	        $this->options['field'] = $field;
-	    }
-	    return $this;
-	}
-	
-	 //回调方法，连贯操作的实现
-    public function __call($method, $args) {
-		$method = strtolower($method);
-        if ( in_array($method, array('data','where','group','having','order','limit','cache')) ) {
-            $this->options[$method] = $args[0];	//接收数据			
-			return $this;	//返回对象，连贯查询
-        } else{
-			throw new \Exception($method . '方法在Model.class.php类中没有定义');
-		}
-    }
-	
-	//执行原生sql语句，如果sql是查询语句，返回二维数组
-    public function query($sql, $params = array(), $is_query = false) {
-        if ( empty($sql) ) return false;
-		$sql = str_replace('{pre}', $this->pre, $sql);	//表前缀替换
-		$this->sql = $sql;
-		//判断当前的sql是否是查询语句
-		if ( $is_query || strpos(trim(strtolower($sql)), 'select') === 0 ) {
-			$data = $this->_readCache();
-			if ( !empty($data) ) return $data;
-            $link = $this->readLink();
-			$link->query($this->sql, $params);	
-			$data = $link->fetchAll();			
-			$this->_writeCache($data);
-			return $data;				
-		} else {
-			return $this->writeLink()->execute($this->sql, $params); //不是查询条件，直接执行
-		}
-    }
-	
-	//统计行数
-	public function count() {
-		$table = $this->options['table'];	//当前表
-		$field = $this->options['field'];//查询的字段
-		$where = $this->_parseCondition(false);	//条件
-		$this->sql = "SELECT count($field) FROM $table $where";	//这不是真正执行的sql，仅作缓存的key使用
-		
-		$data = $this->_readCache();
-		if ( !empty($data) ) return $data;
-		
-		$link = $this->readLink();
-		$data = $link->count($table, $where ,$field);
-		$this->_writeCache($data);
-		$this->sql = $link->getSql(); //从驱动层返回真正的sql语句，供调试使用
-		return $data;
-	}
-	
-	//只查询一条信息，返回一维数组	
-    public function find() {
-		$this->options['limit'] = 1;	//限制只查询一条数据
-		$data = $this->select();
-		return isset($data[0]) ? $data[0] : false;
-     }
-	 
-	//查询多条信息，返回数组
-     public function select() {
-		$table = $this->options['table'];	//当前表
-		$field = $this->options['field'];	//查询的字段
-		$where = $this->_parseCondition(false);	//条件
-		return $this->query("SELECT $field FROM $table $where", array(), true);
-     }
-	 //获取数据库内的所有表
-	public function getTables(){
-		$database = $this->config['DB_NAME'];
-		$this->sql = "SHOW TABLES FROM `$database`";//这不是真正执行的sql，仅作缓存的key使用
-	
-		$data = $this->_readCache();
-		if ( !empty($data) ) return $data;
-		
-		$link = $this->writeLink();
-		$data = $link->getTables( $database );
-		$this->_writeCache( $data );
-		$this->sql = $link->getSql(); //从驱动层返回真正的sql语句，供调试使用
-		return $data;		
-	}
-	 //获取一张表的所有字段
-	 public function getFields() {
-		$table = $this->options['table'];
-		$this->sql = "SHOW FULL FIELDS FROM {$table}"; //这不是真正执行的sql，仅作缓存的key使用
-	
-		$data = $this->_readCache();
-		if ( !empty($data) ) return $data;
-		
-		$link = $this->writeLink();
-		$data = $link->getFields( $table );
-		$this->_writeCache( $data );
-		$this->sql = $link->getSql(); //从驱动层返回真正的sql语句，供调试使用
-		return $data;
-	}
-	public function formatFields(){
-	    $table = $this->options['table'];
-	    $this->sql = "SHOW FORMAT FIELDS FROM {$table}"; //这不是真正执行的sql，仅作缓存的key使用
-	    
-	    $data = $this->_readCache();
-	    if ( !empty($data) ) return $data;
-	    
-	    $link = $this->writeLink();
-	    $data = $link->formatFields( $table );
-	    $this->_writeCache( $data );
-	    $this->sql = $link->getSql(); //从驱动层返回真正的sql语句，供调试使用
-	    return $data;
-	}
-	 //插入数据
-    public function insert( $replace = false ) {
-		$table = $this->options['table'];	//当前表
-		$data = $this->_parseData('add');	//要插入的数据
-		$INSERT = $replace ? 'REPLACE' : 'INSERT';
-        $this->sql = "$INSERT INTO $table $data" ;
-        
-        $link = $this->writeLink();
-        $query = $link->execute($this->sql);
-		if ( $link->affectedRows() ) {
-			 $id = $link->lastId();
-			 return empty($id) ? $link->affectedRows() : $id;
-		}
-        return false;
-    }
-	
-	//替换数据
-	 public function replace() {
-		return $this->insert( true );
-    }
-	
-	//修改更新
-    public function update() {
-		$table = $this->options['table'];	//当前表
-		$data = $this->_parseData('save');	//要更新的数据
-		$where = $this->_parseCondition(true);	//更新条件
-		if ( empty($where) ) return false; //修改条件为空时，则返回false，避免不小心将整个表数据修改了
-			
-        $this->sql = "UPDATE $table SET $data $where" ;
-        $link = $this->writeLink();
-	    $link->execute($this->sql);
-		return $link->affectedRows();
-    }
-	
-	//删除
-    public function delete($delete_table=null) {
-		$table = $this->options['table'];	//当前表
-		$where = $this->_parseCondition(true);	//条件
-		if ( empty($where) ) return false; //删除条件为空时，则返回false，避免数据不小心被全部删除
-		
-		if (is_array($delete_table)) {			
-			$delete_table = implode(',',$delete_table);			
-		}
-		
-		$this->sql = "DELETE $delete_table FROM $table $where";
-		$link = $this->writeLink();
-        $query = $link->execute($this->sql);
-		return $link->affectedRows();
-    }
-	
-	
-	
-	//返回sql语句
-    public function getSql() {
-        return $this->sql;
+        return $config;
     }
 
-	//删除数据库缓存
-    public function clearCache() {
-		if ( $this->initCache() ) {
-			return $this->cache->clear();
-		}
-		return false;
+    /**
+     * DSN解析
+     * 格式： mysql://username:passwd@localhost:3306/DbName?param1=val1&param2=val2#utf8
+     * @static
+     * @access private
+     * @param string $dsnStr
+     * @return array
+     */
+    static private function parseDsn($dsnStr) {
+        if( empty($dsnStr) ){return false;}
+        $info = parse_url($dsnStr);
+        if(!$info) {
+            return false;
+        }
+        $dsn = array(
+            'type'      =>  $info['scheme'],
+            'username'  =>  isset($info['user']) ? $info['user'] : '',
+            'password'  =>  isset($info['pass']) ? $info['pass'] : '',
+            'hostname'  =>  isset($info['host']) ? $info['host'] : '',
+            'hostport'  =>  isset($info['port']) ? $info['port'] : '',
+            'database'  =>  isset($info['path']) ? substr($info['path'],1) : '',
+            'charset'   =>  isset($info['fragment'])?$info['fragment']:'utf8',
+        );
+        
+        if(isset($info['query'])) {
+            parse_str($info['query'],$dsn['params']);
+        }else{
+            $dsn['params']  =   array();
+        }
+        return $dsn;
+     }
+
+    // 调用驱动类的方法
+    static public function __callStatic($method, $params){
+        return call_user_func_array(array(self::$_instance, $method), $params);
     }
-	
-	 //初始化缓存类，如果开启缓存，则加载缓存类并实例化
-	public function initCache() {		
-		if (is_object($this->cache)) {
-			return true;
-		} else if ($this->config['DB_CACHE_ON']) {
-			require_once( dirname(__FILE__) . '/Cache.class.php' );
-			$this->cache = new Cache($this->config, $this->config['DB_CACHE_TYPE']);
-			return true;
-		} else {
-			return false;
-		}
-	}
-	
-	//读取缓存
-	private  function _readCache() {
-		isset($this->options['cache']) or $this->options['cache'] = $this->config['default_db_cache_time'];
-		//缓存时间为0，不读取缓存
-		if ($this->options['cache'] == 0)
-			return false;
-		if ($this->initCache()) {
-			$data = $this->cache->get($this->sql);
-			if ( !empty($data) ) {
-				unset($this->options['cache']);
-				return $data;
-			}
-		}
-		return false;
-	}
-	
-	//写入缓存
-	private function _writeCache($data) {
-		//缓存时间为0，不设置缓存
-		if ( $this->options['cache'] == 0)
-			return false;		
-		if ( $this->initCache() ) {				
-			$expire = $this->options['cache'];
-			unset($this->options['cache']);
-			return $this->cache->set($this->sql, $data, $expire);	
-		}
-		return false;	
-	}
-	
-	//解析数据  
-	private function _parseData($type) {
-		$data = $this->writeLink()->parseData($this->options, $type);
-		$this->options['data'] = '';
-		return $data;
-	}
-	
-	//解析条件
-	private function _parseCondition($is_master=true) {
-	    //主数据库用写链接 从数据库用读链接
-	    $link = $is_master ? $this->writeLink() : $this->readLink();
-		$condition = $link->parseCondition($this->options);
-		$this->options['where'] = '';
-		$this->options['group'] = '';
-		$this->options['having'] = '';
-		$this->options['order'] = '';
-		$this->options['limit'] = '';
-		$this->options['field'] = '*';		
-		return $condition;		
-	}
-	//事务开始
-	public function begin(){
-	    $this->writeLink()->beginTransaction();
-	}
-	//事务提交
-	public function commit(){
-	    $this->writeLink()->commit();
-	}
-	//事务回滚
-	public function rollBack(){
-	    $this->writeLink()->rollBack();
-	}
-	
 }
