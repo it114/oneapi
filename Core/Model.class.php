@@ -161,7 +161,7 @@ class Model {
         $this->fields['_type'] =  $type;
 
         // 2008-3-7 增加缓存开关控制
-        if(C('DB_FIELDS_CACHE')){
+        if(C('db_fields_cache')){
             // 永久缓存数据表信息
             $db   =  $this->dbName?:C('DB_NAME');
             F('_fields/'.strtolower($db.'.'.$this->tablePrefix.$this->name),$this->fields);

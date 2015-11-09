@@ -10,7 +10,7 @@ $retConfig = array(
             'data_path_level' =>  1,        // 子目录缓存级别,
             'data_cache_check' =>false,//是否开启数据缓存校验
             'data_cache_compress' => false, //缓存数据是否压缩
-            
+            'db_fields_cache' => true,//是否缓存字段
         ),
         'db'=>array(//主库配置
             'db_type'=>'mysql',
