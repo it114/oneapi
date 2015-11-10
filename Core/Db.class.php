@@ -1,14 +1,4 @@
 <?php
-// +----------------------------------------------------------------------
-// | ThinkPHP [ WE CAN DO IT JUST THINK IT ]
-// +----------------------------------------------------------------------
-// | Copyright (c) 2006-2014 http://thinkphp.cn All rights reserved.
-// +----------------------------------------------------------------------
-// | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
-// +----------------------------------------------------------------------
-// | Author: liu21st <liu21st@gmail.com>
-// +----------------------------------------------------------------------
-
 namespace Core\db;
 use Core\util\Config;
 /**
@@ -18,7 +8,7 @@ class Db {
 
     static private  $instance   =  array();     //  数据库连接实例
     static private  $_instance  =  null;   //  当前数据库连接实例
-
+    
     /**
      * 取得数据库类实例
      * @static

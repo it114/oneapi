@@ -8,7 +8,7 @@
 // +----------------------------------------------------------------------
 // | Author: liu21st <liu21st@gmail.com>
 // +----------------------------------------------------------------------
-namespace Core\cache;
+namespace Core;
 use Core\util\Config;
 /**
  * 缓存管理类
@@ -80,7 +80,7 @@ class Cache {
     public function getOptions($name) {
         return $this->options[$name];
     }
-
+//不限制同一个文件的存储大小，所以无须设置
 //     /**
 //      * 队列缓存
 //      * @access protected

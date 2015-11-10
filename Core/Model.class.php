@@ -110,7 +110,7 @@ class Model {
             // 如果数据表字段没有定义则自动获取
             if(Config::get('db_fields_cache')) {
                 $db   =  $this->dbName?:Config::get('db_name');
-                $fields = F('_fields/'.strtolower($db.'.'.$this->tablePrefix.$this->name));
+                $fields = cacheWithFile(strtolower($db.'.'.$this->tablePrefix.$this->name),'','_fields');
                 if($fields) {
                     $this->fields   =   $fields;
                     if(!empty($fields['_pk'])){
@@ -159,12 +159,11 @@ class Model {
         }
         // 记录字段类型信息
         $this->fields['_type'] =  $type;
-
-        // 2008-3-7 增加缓存开关控制
-        if(C('db_fields_cache')){
+        
+        if(Config::get('db_fields_cache')){
             // 永久缓存数据表信息
-            $db   =  $this->dbName?:C('DB_NAME');
-            F('_fields/'.strtolower($db.'.'.$this->tablePrefix.$this->name),$this->fields);
+            $db   =  $this->dbName?:Config::get('db_name');
+            cacheWithFile(strtolower($db.'.'.$this->tablePrefix.$this->name),$this->fields,'_fields');
         }
     }
 
@@ -228,18 +227,21 @@ class Model {
             return $this->getField(strtoupper($method).'('.$field.') AS tp_'.$method);
         }elseif(strtolower(substr($method,0,5))=='getby') {
             // 根据某个字段获取记录
-            $field   =   parse_name(substr($method,5));
-            $where[$field] =  $args[0];
-            return $this->where($where)->find();
+            //TODO 暂时不支持
+//             $field   =   parse_name(substr($method,5));
+//             $where[$field] =  $args[0];
+//             return $this->where($where)->find();
         }elseif(strtolower(substr($method,0,10))=='getfieldby') {
             // 根据某个字段获取记录的某个值
-            $name   =   parse_name(substr($method,10));
-            $where[$name] =$args[0];
-            return $this->where($where)->getField($args[1]);
+//             $name   =   parse_name(substr($method,10));
+//             $where[$name] =$args[0];
+//             return $this->where($where)->getField($args[1]);
         }elseif(isset($this->_scope[$method])){// 命名范围的单独调用支持
             return $this->scope($method,$args[0]);
         }else{
-            E(__CLASS__.':'.$method.L('_METHOD_NOT_EXIST_'));
+            throw new \Exception(__CLASS__.':'.$method.'_METHOD_NOT_EXIST_', 0, 0);
+            //TODO 
+            //E(__CLASS__.':'.$method.L('_METHOD_NOT_EXIST_'));
             return;
         }
     }
@@ -268,10 +270,12 @@ class Model {
             foreach ($data as $key=>$val){
                 if(!in_array($key,$fields,true)){
                     if(!empty($this->options['strict'])){
-                        E(L('_DATA_TYPE_INVALID_').':['.$key.'=>'.$val.']');
+                        //TODO 数据安全检测
+                        die('_DATA_TYPE_INVALID_:'.':['.$key.'=>'.$val.']');
+                        //E(L('_DATA_TYPE_INVALID_').':['.$key.'=>'.$val.']');
                     }
                     unset($data[$key]);
-                }elseif(is_scalar($val)) {
+                }elseif(is_scalar($val)) {//检测值是否是标量，例如int fload 等原始类型，数组和object等是非标量
                     // 字段类型检查 和 强制转换
                     $this->_parseType($data,$key);
                 }
@@ -306,7 +310,7 @@ class Model {
                 // 重置数据
                 $this->data     = array();
             }else{
-                $this->error    = L('_DATA_TYPE_INVALID_');
+                $this->error    = '_DATA_TYPE_INVALID_';//TODO L('_DATA_TYPE_INVALID_');
                 return false;
             }
         }
