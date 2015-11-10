@@ -1,6 +1,7 @@
 <?php
 $retConfig = array(
     'dev'=>array(
+        'token_on' => true,//是否开启表单令牌验证
         'cache'=>array(
             'default_db_cache_time'=>300,//数据库读取数据默认缓存 5分钟
             'data_cache_type'=> 'File' ,//数据缓存类型,支持:File|Db|Apc|Memcache,

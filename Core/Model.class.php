@@ -10,6 +10,7 @@
 // +----------------------------------------------------------------------
 namespace Core;
 use Core\util\Config;
+use Core\util\Request;
 /**
  * ThinkPHP Model模型类
  * 实现了ORM和ActiveRecords模式
@@ -349,7 +350,7 @@ class Model {
 
     public function addAll($dataList,$options=array(),$replace=false){
         if(empty($dataList)) {
-            $this->error = L('_DATA_TYPE_INVALID_');
+            $this->error = '_DATA_TYPE_INVALID_';//TODO L('_DATA_TYPE_INVALID_');
             return false;
         }
         // 数据处理
@@ -383,7 +384,7 @@ class Model {
         // 写入数据到数据库
         if(false === $result = $this->db->selectInsert($fields?:$options['field'],$table?:$this->getTableName(),$options)){
             // 数据库插入操作失败
-            $this->error = L('_OPERATION_WRONG_');
+            $this->error = '_OPERATION_WRONG_';//TODO L('_OPERATION_WRONG_');
             return false;
         }else {
             // 插入成功
@@ -406,7 +407,7 @@ class Model {
                 // 重置数据
                 $this->data     =   array();
             }else{
-                $this->error    =   L('_DATA_TYPE_INVALID_');
+                $this->error    = '_DATA_TYPE_INVALID_';//TODO  L('_DATA_TYPE_INVALID_');
                 return false;
             }
         }
@@ -414,7 +415,7 @@ class Model {
         $data       =   $this->_facade($data);
         if(empty($data)){
             // 没有数据则不执行
-            $this->error    =   L('_DATA_TYPE_INVALID_');
+            $this->error    = '_DATA_TYPE_INVALID_';//TODO   L('_DATA_TYPE_INVALID_');
             return false;
         }
         // 分析表达式
@@ -432,7 +433,7 @@ class Model {
                         $where[$field]      =   $data[$field];
                     } else {
                            // 如果缺少复合主键数据则不执行
-                        $this->error        =   L('_OPERATION_WRONG_');
+                        $this->error        =  '_OPERATION_WRONG_';//TODO L('_OPERATION_WRONG_');
                         return false;
                     }
                     unset($data[$field]);
@@ -440,7 +441,7 @@ class Model {
             }
             if(!isset($where)){
                 // 如果没有任何更新条件则不执行
-                $this->error        =   L('_OPERATION_WRONG_');
+                $this->error        = '_OPERATION_WRONG_';//TODO  L('_OPERATION_WRONG_');
                 return false;
             }else{
                 $options['where']   =   $where;
@@ -576,7 +577,7 @@ class Model {
         if(isset($options['cache'])){
             $cache  =   $options['cache'];
             $key    =   is_string($cache['key'])?$cache['key']:md5(serialize($options));
-            $data   =   S($key,'',$cache);
+            $data   =   cache($key,'',$cache);
             if(false !== $data){
                 return $data;
             }
@@ -607,7 +608,7 @@ class Model {
         }
 
         if(isset($cache)){
-            S($key,$resultSet,$cache);
+            cache($key,$resultSet,$cache);
         }
         return $resultSet;
     }
@@ -660,7 +661,7 @@ class Model {
                     }
                 }elseif(!is_numeric($key) && '_' != substr($key,0,1) && false === strpos($key,'.') && false === strpos($key,'(') && false === strpos($key,'|') && false === strpos($key,'&')){
                     if(!empty($this->options['strict'])){
-                        E(L('_ERROR_QUERY_EXPRESS_').':['.$key.'=>'.$val.']');
+                       die('_ERROR_QUERY_EXPRESS_'.':['.$key.'=>'.$val.']');//TODO  E(L('_ERROR_QUERY_EXPRESS_').':['.$key.'=>'.$val.']');
                     } 
                     unset($options['where'][$key]);
                 }
@@ -705,14 +706,15 @@ class Model {
      */
     protected function _read_data($data) {
         // 检查字段映射
-        if(!empty($this->_map) && C('READ_DATA_MAP')) {
-            foreach ($this->_map as $key=>$val){
-                if(isset($data[$val])) {
-                    $data[$key] =   $data[$val];
-                    unset($data[$val]);
-                }
-            }
-        }
+        //TODO 
+//         if(!empty($this->_map) && C('READ_DATA_MAP')) {
+//             foreach ($this->_map as $key=>$val){
+//                 if(isset($data[$val])) {
+//                     $data[$key] =   $data[$val];
+//                     unset($data[$val]);
+//                 }
+//             }
+//         }
         return $data;
     }
 
@@ -755,7 +757,7 @@ class Model {
         if(isset($options['cache'])){
             $cache  =   $options['cache'];
             $key    =   is_string($cache['key'])?$cache['key']:md5(serialize($options));
-            $data   =   S($key,'',$cache);
+            $data   =   cache($key,'',$cache);
             if(false !== $data){
                 $this->data     =   $data;
                 return $data;
@@ -780,7 +782,7 @@ class Model {
         }
         $this->data     =   $data;
         if(isset($cache)){
-            S($key,$data,$cache);
+            cache($key,$data,$cache);
         }
         return $this->data;
     }
@@ -900,21 +902,21 @@ class Model {
      * @return false|integer
      */
     protected function lazyWrite($guid,$step,$lazyTime) {
-        if(false !== ($value = S($guid))) { // 存在缓存写入数据
-            if(NOW_TIME > S($guid.'_time')+$lazyTime) {
+        if(false !== ($value = cache($guid))) { // 存在缓存写入数据
+            if(NOW_TIME > cache($guid.'_time')+$lazyTime) {
                 // 延时更新时间到了，删除缓存数据 并实际写入数据库
-                S($guid,NULL);
-                S($guid.'_time',NULL);
+                cache($guid,NULL);
+                cache($guid.'_time',NULL);
                 return $value+$step;
             }else{
                 // 追加数据到缓存
-                S($guid,$value+$step);
+                cache($guid,$value+$step);
                 return false;
             }
         }else{ // 没有缓存数据
-            S($guid,$step);
+            cache($guid,$step);
             // 计时开始
-            S($guid.'_time',NOW_TIME);
+            cache($guid.'_time',NOW_TIME);
             return false;
         }
     }
@@ -933,7 +935,7 @@ class Model {
         if(isset($options['cache'])){
             $cache  =   $options['cache'];
             $key    =   is_string($cache['key'])?$cache['key']:md5($sepa.serialize($options));
-            $data   =   S($key,'',$cache);
+            $data   =   cache($key,'',$cache);
             if(false !== $data){
                 return $data;
             }
@@ -963,7 +965,7 @@ class Model {
                     }
                 }
                 if(isset($cache)){
-                    S($key,$cols,$cache);
+                    cache($key,$cols,$cache);
                 }
                 return $cols;
             }
@@ -980,7 +982,7 @@ class Model {
                 if(true !== $sepa && 1==$options['limit']) {
                     $data   =   reset($result[0]);
                     if(isset($cache)){
-                        S($key,$data,$cache);
+                        cache($key,$data,$cache);
                     }            
                     return $data;
                 }
@@ -988,7 +990,7 @@ class Model {
                     $array[]    =   $val[$field];
                 }
                 if(isset($cache)){
-                    S($key,$array,$cache);
+                    cache($key,$array,$cache);
                 }                
                 return $array;
             }
@@ -1006,13 +1008,13 @@ class Model {
      public function create($data='',$type='') {
         // 如果没有传值默认取POST数据
         if(empty($data)) {
-            $data   =   I('post.');
+            $data   =   Request::getPost();
         }elseif(is_object($data)){
             $data   =   get_object_vars($data);
         }
         // 验证数据
         if(empty($data) || !is_array($data)) {
-            $this->error = L('_DATA_TYPE_INVALID_');
+            $this->error = '_DATA_TYPE_INVALID_';//TODO L('_DATA_TYPE_INVALID_');
             return false;
         }
 
@@ -1036,7 +1038,7 @@ class Model {
                 $fields =   explode(',',$fields);
             }
             // 判断令牌验证字段
-            if(C('TOKEN_ON'))   $fields[] = C('TOKEN_NAME', null, '__hash__');
+            if(Config::get('token_on'))   $fields[] = Config::set('token_on', __hash__);
             foreach ($data as $key=>$val){
                 if(!in_array($key,$fields)) {
                     unset($data[$key]);
@@ -1049,7 +1051,7 @@ class Model {
 
         // 表单令牌验证
         if(!$this->autoCheckToken($data)) {
-            $this->error = L('_TOKEN_ERROR_');
+            $this->error = '_TOKEN_ERROR_';//TODO L('_TOKEN_ERROR_');
             return false;
         }
 
@@ -1078,8 +1080,8 @@ class Model {
     public function autoCheckToken($data) {
         // 支持使用token(false) 关闭令牌验证
         if(isset($this->options['token']) && !$this->options['token']) return true;
-        if(C('TOKEN_ON')){
-            $name   = C('TOKEN_NAME', null, '__hash__');
+        if(Config::get('token_on')){
+            $name   = Config::set('token_on', '__hash__');
             if(!isset($data[$name]) || !isset($_SESSION[$name])) { // 令牌数据无效
                 return false;
             }
@@ -1091,7 +1093,7 @@ class Model {
                 return true;
             }
             // 开启TOKEN重置
-            if(C('TOKEN_RESET')) unset($_SESSION[$name][$key]);
+            if(Config::get('token_on')) unset($_SESSION[$name][$key]);
             return false;
         }
         return true;
@@ -1209,7 +1211,7 @@ class Model {
                 if(empty($val[5]) || ( $val[5]== self::MODEL_BOTH && $type < 3 ) || $val[5]== $type ) {
                     if(0==strpos($val[2],'{%') && strpos($val[2],'}'))
                         // 支持提示信息的多语言 使用 {%语言定义} 方式
-                        $val[2]  =  L(substr($val[2],2,-1));
+                        $val[2]  = substr($val[2],2,-1);//TODO L(substr($val[2],2,-1));
                     $val[3]  =  isset($val[3])?$val[3]:self::EXISTS_VALIDATE;
                     $val[4]  =  isset($val[4])?$val[4]:'regex';
                     // 判断验证条件
@@ -1443,7 +1445,7 @@ class Model {
         if(!isset($this->_db[$linkNum]) || $force ) {
             // 创建一个新的实例
             if(!empty($config) && is_string($config) && false === strpos($config,'/')) { // 支持读取配置参数
-                $config  =  C($config);
+                $config  =  Config::set($config);
             }
             $this->_db[$linkNum]            =    Db::getInstance($config);
         }elseif(NULL === $config){

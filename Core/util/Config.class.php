@@ -51,7 +51,7 @@ class Config
         }
     }
     
-    public static function set($key, $value){
+    public static function set($key, $value,$def = ''){
         $arr = explode('.', $key);
         switch(count($arr)){
             case 1 :
@@ -68,7 +68,7 @@ class Config
         return true;
     }
     
-    public static function get($key=NULL){
+    public static function get($key=NULL,$def = ''){
         if( empty($key)) return self::$_configValues;
         $arr = explode('.', $key);
         switch(count($arr)){
@@ -76,16 +76,19 @@ class Config
                 if( isset(self::$_configValues[ $arr[0] ])) {
                     return self::$_configValues[ $arr[0] ];
                 }
+                return $def;
                 break;
             case 2 :
                 if( isset(self::$_configValues[ $arr[0] ][ $arr[1] ])) {
                     return self::$_configValues[ $arr[0] ][ $arr[1] ];
                 }
+                return $def;
                 break;
             case 3 :
                 if( isset(self::$_configValues[ $arr[0] ][ $arr[1] ][ $arr[2] ])) {
                     return self::$_configValues[ $arr[0] ][ $arr[1] ][ $arr[2] ];
                 }
+                return $def;
                 break;
             default: break;
         }

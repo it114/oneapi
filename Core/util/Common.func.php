@@ -62,7 +62,7 @@ function cacheWithFile($name,$value='',$dir = '' ) {
 }
 
 
-function getip() {
+function get_client_ip() {
     static $ip = '';
     $ip = $_SERVER['REMOTE_ADDR'];
     if(isset($_SERVER['HTTP_CDN_SRC_IP'])) {
