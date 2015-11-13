@@ -1211,7 +1211,7 @@ class Model {
                 if(empty($val[5]) || ( $val[5]== self::MODEL_BOTH && $type < 3 ) || $val[5]== $type ) {
                     if(0==strpos($val[2],'{%') && strpos($val[2],'}'))
                         // 支持提示信息的多语言 使用 {%语言定义} 方式
-                        $val[2]  = substr($val[2],2,-1);//TODO L(substr($val[2],2,-1));
+                        $val[2]  = substr($val[2],2,-1);//TODO  L(substr($val[2],2,-1));
                     $val[3]  =  isset($val[3])?$val[3]:self::EXISTS_VALIDATE;
                     $val[4]  =  isset($val[4])?$val[4]:'regex';
                     // 判断验证条件
@@ -1237,7 +1237,7 @@ class Model {
         }
         return true;
     }
-
+    
     /**
      * 验证表单字段 支持批量验证
      * 如果批量验证返回错误的数组信息
@@ -1445,9 +1445,9 @@ class Model {
         if(!isset($this->_db[$linkNum]) || $force ) {
             // 创建一个新的实例
             if(!empty($config) && is_string($config) && false === strpos($config,'/')) { // 支持读取配置参数
-                $config  =  Config::set($config);
+                $config  =  Config::get($config);
             }
-            $this->_db[$linkNum]            =    Db::getInstance($config);
+            $this->_db[$linkNum]            =  \Core\Db::getInstance($config);
         }elseif(NULL === $config){
             $this->_db[$linkNum]->close(); // 关闭数据库连接
             unset($this->_db[$linkNum]);
@@ -1471,7 +1471,7 @@ class Model {
      */
     public function getModelName() {
         if(empty($this->name)){
-            $name = substr(get_class($this),0,-strlen(C('DEFAULT_M_LAYER')));
+            $name = substr(get_class($this),0,-strlen('Model'));//TODO 这里统一-strlen(C('DEFAULT_M_LAYER')));
             if ( $pos = strrpos($name,'\\') ) {//有命名空间
                 $this->name = substr($name,$pos+1);
             }else{

@@ -1,5 +1,5 @@
 <?php
-namespace Core\db;
+namespace Core;
 use Core\util\Config;
 /**
  * ThinkPHP 数据库中间层实现类
