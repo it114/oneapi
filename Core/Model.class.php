@@ -1619,7 +1619,7 @@ class Model {
         }elseif(is_string($data)){
             parse_str($data,$data);
         }elseif(!is_array($data)){
-            E(L('_DATA_TYPE_INVALID_'));
+           throw new \Exception('_DATA_TYPE_INVALID_', 0, 0); //TODO E(L('_DATA_TYPE_INVALID_'));
         }
         $this->data = $data;
         return $this;
@@ -1712,7 +1712,7 @@ class Model {
                 $options =  $union;
             }
         }else{
-            E(L('_DATA_TYPE_INVALID_'));
+           throw new \Exception('_DATA_TYPE_INVALID_', 0, 0);  //TODO  E(L('_DATA_TYPE_INVALID_'));
         }
         $this->options['union'][]  =   $options;
         return $this;
