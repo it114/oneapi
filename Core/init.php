@@ -25,6 +25,8 @@ defined('CORE_PATH') ||  define('CORE_PATH', ROOT_PATH.'Core'.DIRECTORY_SEPARATO
 defined('LIBRARY_PATH') ||  define('LIBRARY_PATH', ROOT_PATH.'Library'.DIRECTORY_SEPARATOR);
 defined('APPS_PATH') ||  define('APPS_PATH', ROOT_PATH.'Apps'.DIRECTORY_SEPARATOR);
 defined('STORAGE_PATH') ||  define('STORAGE_PATH', ROOT_PATH.'Storage'.DIRECTORY_SEPARATOR);
+defined('DATA_CACHE_PATH') || define('DATA_CACHE_PATH',STORAGE_PATH.'cache'.DIRECTORY_SEPARATOR.'data');
+
 //MAGIC_QUOTES_GPC 5.4已经移除了 refer:http://blog.csdn.net/lyjtynet/article/details/6261169
 define('MAGIC_QUOTES_GPC',false);
 define('TIMESTAMP', time());

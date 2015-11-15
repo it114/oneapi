@@ -1,6 +1,85 @@
 <?php
 
-function getip() {
+/**
+ * 根据PHP各种类型变量生成唯一标识号
+ * @param mixed $mix 变量
+ * @return string
+ */
+function to_guid_string($mix) {
+    if (is_object($mix)) {
+        return spl_object_hash($mix);
+    } elseif (is_resource($mix)) {
+        $mix = get_resource_type($mix) . strval($mix);
+    } else {
+        $mix = serialize($mix);
+    }
+    return md5($mix);
+}
+
+
+/**
+ * 字符串命名风格转换
+ * type 0 将Java风格转换为C的风格 1 将C风格转换为Java的风格
+ * @param string $name 字符串
+ * @param integer $type 转换类型
+ * @return string
+ */
+function parse_name($name, $type=0) {
+    if ($type) {
+        return ucfirst(preg_replace_callback('/_([a-zA-Z])/', function($match){return strtoupper($match[1]);}, $name));
+    } else {
+        return strtolower(trim(preg_replace("/[A-Z]/", "_\\0", $name), "_"));
+    }
+}
+
+
+/**
+ * 缓存管理
+ * @param mixed $name 缓存名称，如果为数组表示进行缓存设置
+ * @param mixed $value 缓存值
+ * @param mixed $options 缓存参数
+ * @return mixed
+ */
+function cache($name,$value='',$options=null) {
+    static $cache   =   '';
+    if(is_array($options)){
+        // 缓存操作的同时初始化
+        $type       =   isset($options['type'])?$options['type']:'';
+        $cache      =   Core\Cache::getInstance($type,$options);
+    }elseif(is_array($name)) { // 缓存初始化
+        $type       =   isset($name['type'])?$name['type']:'';
+        $cache      =   Core\Cache::getInstance($type,$name);
+        return $cache;
+    }elseif(empty($cache)) { // 自动初始化
+        $cache      =   Core\Cache::getInstance();
+    }
+    if(''=== $value){ // 获取缓存
+        return $cache->get($name);
+    }elseif(is_null($value)) { // 删除缓存
+        return $cache->rm($name);
+    }else { // 缓存数据
+        if(is_array($options)) {
+            $expire     =   isset($options['expire'])?$options['expire']:NULL;
+        }else{
+            $expire     =   is_numeric($options)?$options:NULL;
+        }
+        return $cache->set($name, $value, $expire);
+    }
+}
+
+/**
+ *  本地文件持久化缓存，不过期
+ *  数据存放在STORAGE_PATH下的cache下的data目录下
+ * @param unknown $name
+ * @param unknown $value
+ */
+function cacheWithFile($name,$value='',$dir = '' ) {
+    $base_dir = STORAGE_PATH.'cache'.DIRECTORY_SEPARATOR.'data'.DIRECTORY_SEPARATOR.$dir;
+    cache($name,$value,array('type'=>'File','tmp'=>$base_dir));
+}
+
+
+function get_client_ip() {
     static $ip = '';
     $ip = $_SERVER['REMOTE_ADDR'];
     if(isset($_SERVER['HTTP_CDN_SRC_IP'])) {
