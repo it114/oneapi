@@ -16,6 +16,25 @@ function to_guid_string($mix) {
     return md5($mix);
 }
 
+/**
+ * 实例化一个没有模型文件的Model
+ * @param string $name Model名称 支持指定基础模型 例如 MongoModel:User
+ * @param string $tablePrefix 表前缀
+ * @param mixed $connection 数据库连接信息
+ * @return Core\Model
+ */
+function model($name='', $tablePrefix='',$connection='') {
+    static $_model  = array();
+    if(strpos($name,':')) {
+        list($class,$name)    =  explode(':',$name);
+    }else{
+        $class      =   'Core\\Model';
+    }
+    $guid           =   (is_array($connection)?implode('',$connection):$connection).$tablePrefix . $name . '_' . $class;
+    if (!isset($_model[$guid]))
+        $_model[$guid] = new $class($name,$tablePrefix,$connection);
+    return $_model[$guid];
+}
 
 /**
  * 字符串命名风格转换
@@ -42,7 +61,7 @@ function parse_name($name, $type=0) {
  */
 function cache($name,$value='',$options=null) {
     static $cache   =   '';
-    if(is_array($options)){
+    if(is_array($options)) {
         // 缓存操作的同时初始化
         $type       =   isset($options['type'])?$options['type']:'';
         $cache      =   Core\Cache::getInstance($type,$options);

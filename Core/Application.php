@@ -17,24 +17,23 @@ class Application {
         //初始化环境
         $this->_initEnv();
         //加载通用函数
-        Loader::loadFile(ROOT_PATH.'Core/util/Common.func.php');
+        Loader::loadFile(ROOT_PATH.'Core/Common.func.php');
         //路由,默认r=app/controller/action形式
-        $router = new \Core\util\Router();
-        $router->init();
+
+        $router = new \Core\util\Router(Config::get('url.url_type'));
+        $router->start();
         $config->loadAppConfig();
     }
     
     public function run() {
-        
         $controller = '\Apps\\'. APP_NAME .'\controller\\'.ucfirst( CONTROLLER_NAME );
-        if( !class_exists($controller) ) {
-            throw new \Exception("Controller '{$controller}' not found", 404);
+        if(!class_exists($controller)){
+            exit( '404 controller not found !' );
         }
-        
         $obj = new $controller();
         $action = ACTION_NAME;
         if( !method_exists($obj, $action) ){
-            throw new \Exception("Action '{$controller}::{ACTION_NAME}()' not found", 404);
+            exit('action :'.$action.' is not exists ');
         }
         $obj->_initActions(); //初始化白名单
         $obj->_valid_action($action);//验证 操作是否 在白名单

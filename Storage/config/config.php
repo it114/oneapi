@@ -1,6 +1,13 @@
 <?php
 $retConfig = array(
     'dev'=>array(
+        'url'=>array(
+            'default_app'=>'home',
+            'default_controller'=>'index',
+            'default_action'=>'index',
+            'default_url_suffix'=>'.json',
+            'url_type'=>2,//url类型 1、兼容模式，类似r=app/controller/action形式；2、pathinfo的rest风格格式index.php/app/controller/action
+        ),       
         'token_on' => true,//是否开启表单令牌验证
         'cache'=>array(
             'default_db_cache_time'=>300,//数据库读取数据默认缓存 5分钟
@@ -20,29 +27,15 @@ $retConfig = array(
             'db_username'=>'test',
             'db_password'=>'test',
             'db_port'=> 3306,
-            'db_name' => 'oneapi',
+            'db_name' => 'common-server',
             'db_charset'=>'utf8',
             'presistent'=>true,//pdo是否为持久链接
-            'table_prefix' => '',
+            'table_prefix' => 'qj_',
             'db_deploy_type'=>0,//是否分布式部署 1，是，0 不是
             'db_rw_separate'=>false,// // 数据库读写是否分离 主从式有效      
             'db_master_num' =>  1, // 读写分离后 主服务器数量
             'db_slave_no'=>  '', // 指定从服务器   
             'db_fields_cache' =>true,//是否开启字段缓存
-        ),
-        'db_slave'=>array(
-            array(//从库和主库的配置不一定要都写全，一定要ip不同
-                'db_type'=>'mysql',
-                'db_driver'=>'pdo',
-                'db_host'=>'127.0.0.1',
-                'db_username'=>'test',
-                'db_password'=>'test',
-                'db_port'=> 3306,
-                'db_name' => 'oneapi',
-                'charset'=>'utf8',
-                'presistent'=>true,//pdo是否为持久链接
-                'table_prefix' => '',
-            ),
         ),
         'setting'=>array(
             'timezone' => 'Asia/Shanghai',

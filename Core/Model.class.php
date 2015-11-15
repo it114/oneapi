@@ -90,9 +90,9 @@ class Model {
         }elseif('' != $tablePrefix) {
             $this->tablePrefix = $tablePrefix;
         }elseif(!isset($this->tablePrefix)){
-            $this->tablePrefix = Config::get('db_prefix') ;//C('DB_PREFIX');
-        }
-
+            $this->tablePrefix = Config::get('db.table_prefix') ;//C('DB_PREFIX');
+        } 
+        
         // 数据库初始化操作
         // 获取数据库操作对象
         // 当前模型有独立的数据库连接信息
@@ -109,8 +109,8 @@ class Model {
         // 只在第一次执行记录
         if(empty($this->fields)) {
             // 如果数据表字段没有定义则自动获取
-            if(Config::get('db_fields_cache')) {
-                $db   =  $this->dbName?:Config::get('db_name');
+            if(Config::get('cache.db_fields_cache')) {
+                $db   =  $this->dbName?:Config::get('db.db_name');
                 $fields = cacheWithFile(strtolower($db.'.'.$this->tablePrefix.$this->name),'','_fields');
                 if($fields) {
                     $this->fields   =   $fields;
@@ -161,9 +161,9 @@ class Model {
         // 记录字段类型信息
         $this->fields['_type'] =  $type;
         
-        if(Config::get('db_fields_cache')){
+        if(Config::get('cache.db_fields_cache')){
             // 永久缓存数据表信息
-            $db   =  $this->dbName?:Config::get('db_name');
+            $db   =  $this->dbName?:Config::get('db.db_name');
             cacheWithFile(strtolower($db.'.'.$this->tablePrefix.$this->name),$this->fields,'_fields');
         }
     }
@@ -1441,7 +1441,6 @@ class Model {
         if('' === $linkNum && $this->db) {
             return $this->db;
         }
-
         if(!isset($this->_db[$linkNum]) || $force ) {
             // 创建一个新的实例
             if(!empty($config) && is_string($config) && false === strpos($config,'/')) { // 支持读取配置参数

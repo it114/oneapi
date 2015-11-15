@@ -99,7 +99,8 @@ abstract class Driver {
                 }
                 $this->linkID[$linkNum] = new PDO( $config['dsn'], $config['username'], $config['password'],$this->options);
             }catch (\PDOException $e) {
-                if($autoConnection){
+                exit($e->getMessage());
+                if($autoConnection) {
                     //TODO trace($e->getMessage(),'','ERR');
                     return $this->connect($autoConnection,$linkNum);
                 }elseif($config['debug']){
@@ -135,7 +136,7 @@ abstract class Driver {
      */
     public function query($str,$fetchSql=false) {
         $this->initConnect(false);
-        if ( !$this->_linkID ) return false;
+        if ( !$this->_linkID ) {return false;}
         $this->queryStr     =   $str;
         if(!empty($this->bind)){
             $that   =   $this;
@@ -1063,13 +1064,13 @@ abstract class Driver {
      * @param boolean $master 主服务器
      * @return void
      */
-    protected function initConnect($master=true) {
-        if(!empty($this->config['deploy']))
+    protected function initConnect($master=true) { 
+        if(!empty($this->config['deploy']))  
             // 采用分布式数据库
             $this->_linkID = $this->multiConnect($master);
-        else
+        else{
             // 默认单数据库
-            if ( !$this->_linkID ) $this->_linkID = $this->connect();
+            if ( !$this->_linkID ) $this->_linkID = $this->connect();}
     }
 
     /**

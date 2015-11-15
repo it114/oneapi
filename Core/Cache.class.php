@@ -37,12 +37,13 @@ class Cache {
      * @return object
      */
     public function connect($type='',$options=array()) {
-        if(empty($type))  $type = Config::get('data_cache_type');
-        $class  =   strpos($type,'\\')? $type : 'Core\\cache\\driver\\'.ucwords(strtolower($type));            
+        if(empty($type))  $type = Config::get('cache.data_cache_type');
+        $class  =   strpos($type,'\\')? $type : 'Core\\cache\\'.ucwords(strtolower($type));            
         if(class_exists($class))
             $cache = new $class($options);
         else
-          throw new \Exception('_CACHE_TYPE_INVALID_', 0,0);    //TODO E(L('_CACHE_TYPE_INVALID_').':'.$type);
+            exit('class :'.$class.' not exists ');
+         // throw new \Exception('_CACHE_TYPE_INVALID_', 0,0);    //TODO E(L('_CACHE_TYPE_INVALID_').':'.$type);
         return $cache;
     }
 

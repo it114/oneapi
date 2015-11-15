@@ -24,7 +24,7 @@ class Db {
             // 兼容mysqli
             if('mysqli' == $options['type']) $options['type']   =   'mysql';
             // 如果采用lite方式 仅支持原生SQL 包括query和execute方法
-            $class  =   !empty($options['lite'])?  'Think\Db\Lite' :   'Think\\Db\\Driver\\'.ucwords(strtolower($options['type']));
+            $class  =   !empty($options['lite'])?  'Core\db\Lite' :   'Core\\db\\driver\\'.ucwords(strtolower($options['type']));
             if(class_exists($class)){
                 self::$instance[$md5]   =   new $class($options);
             }else{
@@ -56,35 +56,36 @@ class Db {
                 'hostname'      =>  $config['db_host'],
                 'hostport'      =>  $config['db_port'],
                 'database'      =>  $config['db_name'],
-                'dsn'           =>  isset($config['db_dsn'])?$config['db_dsn']:null,
-                'params'        =>  isset($config['db_params'])?$config['db_params']:null,
-                'charset'       =>  isset($config['db_charset'])?$config['db_charset']:'utf8',
-                'deploy'        =>  isset($config['db_deploy_type'])?$config['db_deploy_type']:0,
-                'rw_separate'   =>  isset($config['db_rw_separate'])?$config['db_rw_separate']:false,
-                'master_num'    =>  isset($config['db_master_num'])?$config['db_master_num']:1,
-                'slave_no'      =>  isset($config['db_slave_no'])?$config['db_slave_no']:'',
-                'debug'         =>  isset($config['db_debug'])?$config['db_debug']:APP_DEBUG,
-                'lite'          =>  isset($config['db_lite'])?$config['db_lite']:false,
+                'dsn'           =>  isset($config['db.db_dsn'])?$config['db.db_dsn']:null,
+                'params'        =>  isset($config['db.db_params'])?$config['db.db_params']:null,
+                'charset'       =>  isset($config['db.db_charset'])?$config['db.db_charset']:'utf8',
+                'deploy'        =>  isset($config['db.db_deploy_type'])?$config['db.db_deploy_type']:0,
+                'rw_separate'   =>  isset($config['db.db_rw_separate'])?$config['db.db_rw_separate']:false,
+                'master_num'    =>  isset($config['db.db_master_num'])?$config['db.db_master_num']:1,
+                'slave_no'      =>  isset($config['db.db_slave_no'])?$config['db.db_slave_no']:'',
+                'debug'         =>  isset($config['db.db_debug'])?$config['db.db_debug']:APP_DEBUG,
+                'lite'          =>  isset($config['db.db_lite'])?$config['db.db_lite']:false,
             );
         }else {
             $config = array (
-                'type'          =>  Config::get('db_type'),
-                'username'      =>  Config::get('db_username'),
-                'password'      =>  Config::get('db_password'),
-                'hostname'      =>  Config::get('db_host'),
-                'hostport'      =>  Config::get('db_port'),
-                'database'      =>  Config::get('db_name'),
-                'dsn'           =>  Config::get('db_dsn'),
-                'params'        =>  Config::get('db_params'),
-                'charset'       =>  Config::get('db_charset'),
-                'deploy'        =>  Config::get('db_deploy_type'),
-                'rw_separate'   =>  Config::get('db_rw_separate'),
-                'master_num'    =>  Config::get('db_master_num'),
-                'slave_no'      =>  Config::get('db_slave_no'),
+                'type'          =>  Config::get('db.db_type'),
+                'username'      =>  Config::get('db.db_username'),
+                'password'      =>  Config::get('db.db_password'),
+                'hostname'      =>  Config::get('db.db_host'),
+                'hostport'      =>  Config::get('db.db_port'),
+                'database'      =>  Config::get('db.db_name'),
+                'dsn'           =>  Config::get('db.db_dsn'),
+                'params'        =>  Config::get('db.db_params'),
+                'charset'       =>  Config::get('db.db_charset'),
+                'deploy'        =>  Config::get('db.db_deploy_type'),
+                'rw_separate'   =>  Config::get('db.db_rw_separate'),
+                'master_num'    =>  Config::get('db.db_master_num'),
+                'slave_no'      =>  Config::get('db.db_slave_no'),
                 'debug'         =>  DEBUG,
                 'lite'          =>  Config::get('db_lite'),
             );
         }
+        //dump($config);
         return $config;
     }
 

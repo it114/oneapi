@@ -8,8 +8,8 @@
 // +----------------------------------------------------------------------
 // | Author: liu21st <liu21st@gmail.com>
 // +----------------------------------------------------------------------
-namespace Cache\cache ;
-use Core\cache\Cache;
+namespace Core\cache ;
+use Core\Cache;
 use Core\util\Config;
 /**
  * 文件类型缓存类

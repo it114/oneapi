@@ -23,6 +23,10 @@ abstract  class AbstractController
     
     abstract public  function _initAuth();
     
+    public function _empty(){
+        echo '404 not found !';
+    }
+    
     /**
      * 返回字符串
      * @param unknown $code 状态码
