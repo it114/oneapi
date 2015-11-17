@@ -27,17 +27,25 @@ class Application {
     
     public function run() {
         $controller = '\Apps\\'. APP_NAME .'\controller\\'.ucfirst( CONTROLLER_NAME );
-        if(!class_exists($controller)){
+        if(!class_exists($controller)) {
             exit( '404 controller not found !' );
         }
         $obj = new $controller();
         $action = ACTION_NAME;
-        if( !method_exists($obj, $action) ){
-            exit('action :'.$action.' is not exists ');
+        if(!method_exists($obj, '_initActions') ){
+            $obj->_initActions(); //初始化白名单
         }
-        $obj->_initActions(); //初始化白名单
-        $obj->_valid_action($action);//验证 操作是否 在白名单
-        $obj->_initAuth();//权限
+        if(!method_exists($obj, $action) ){
+            if(method_exists($obj, '_rest') ){//是否是rest的controller
+                $obj->{'_rest'}();
+            } else if(method_exists($obj, '_empty')) {
+                $obj->{'_empty'}();
+            }
+            exit;
+        }
+        if(!method_exists($obj, '_initAuth') ){
+            $obj->_initAuth(); //初始化白名单
+        }
         $obj ->$action();//执行action
           
     } 

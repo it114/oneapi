@@ -23,42 +23,34 @@ class RestController extends ApiController {
     public function __construct() {
         $suffix = Config::get('url.url_suffix');
         // 资源类型检测
-        if(''== $suffix) { // 自动检测资源类型
-            $this->_type   =  $this->getAcceptType();
+        if(''== $suffix) { 
+            $this->_type   =  'json';
         }elseif(!in_array($suffix,$this->allowType)) {
-            // 资源类型非法 则用默认资源类型访问
-            $this->_type   = $suffix;
-        }else{
-            $this->_type   =  Config::get('url.default_url_suffix') ;
+            $this->_type   = 'json';
         }
-        
         // 请求方式检测
         $method  =  strtolower(REQUEST_METHOD);
         if(!in_array($method,$this->allowMethod)) {
-            // 请求方式非法 则用默认请求方法
             $method = $this->defaultMethod;
         }
         $this->_method = $method;
-        
-        parent::__construct();
     }
 
     /**
-     * 魔术方法 有不存在的操作的时候执行
      * @access public
      * @param string $method 方法名
      * @param array $args 参数
      * @return mixed
      */
-    public function __call($method,$args) {
-        if( 0 === strcasecmp($method,ACTION_NAME.'Action')) {
-            if(method_exists($this,$method.'_'.$this->_method.'_'.$this->_type)) {  
+    public function _rest($method,$args) {
+        if( 0 === strcasecmp($method,ACTION_NAME)) {
+            if(method_exists($this,$method.'_'.$this->_method.'_'.$this->_type)) { //read_get_json 
                 $fun  =  $method.'_'.$this->_method.'_'.$this->_type;
                 $this->invokeFunc($fun, $args);
-            }elseif($this->_method == $this->defaultMethod && method_exists($this,$method.'_'.$this->_type) ){
+            }elseif($this->_method == $this->defaultMethod && method_exists($this,$method.'_'.$this->_type) ){//read_json
                 $fun  =  $method.'_'.$this->_type;
                 $this->invokeFunc($fun, $args);
-            }elseif($this->_type == $this->defaultType && method_exists($this,$method.'_'.$this->_method) ){
+            }elseif($this->_type == $this->defaultType && method_exists($this,$method.'_'.$this->_method) ){//read_get
                 $fun  =  $method.'_'.$this->_method;
                 $this->invokeFunc($fun, $args);
             }elseif(method_exists($this,'_empty')) {
@@ -67,44 +59,11 @@ class RestController extends ApiController {
             }else{
                 trigger_error('unkonwn rest action :'.ACTION_NAME);
             }
-        }
+        } 
     }
 
     private function invokeFunc($func,$args) {
         $this->$func($args);
-    }
-    
-    /**
-     * 获取当前请求的Accept头信息
-     * @return string
-     */
-    protected function getAcceptType(){
-        $type = array(
-            'xml'   =>  'application/xml,text/xml,application/x-xml',
-            'json'  =>  'application/json,text/x-json,application/jsonrequest,text/json',
-            'js'    =>  'text/javascript,application/javascript,application/x-javascript',
-            'css'   =>  'text/css',
-            'rss'   =>  'application/rss+xml',
-            'yaml'  =>  'application/x-yaml,text/yaml',
-            'atom'  =>  'application/atom+xml',
-            'pdf'   =>  'application/pdf',
-            'text'  =>  'text/plain',
-            'png'   =>  'image/png',
-            'jpg'   =>  'image/jpg,image/jpeg,image/pjpeg',
-            'gif'   =>  'image/gif',
-            'csv'   =>  'text/csv',
-            'html'  =>  'text/html,application/xhtml+xml,*/*'
-        );
-        
-        foreach($type as $key=>$val){
-            $array   =  explode(',',$val);
-            foreach($array as $k=>$v){
-                if(stristr($_SERVER['HTTP_ACCEPT'], $v)) {
-                    return $key;
-                }
-            }
-        }
-        return false;
     }
 
     // 发送Http状态信息
@@ -197,7 +156,7 @@ class RestController extends ApiController {
      */
     public function setContentType($type, $charset=''){
         if(headers_sent()) return;
-        if(empty($charset))  $charset = C('DEFAULT_CHARSET');
+        if(empty($charset))  $charset ='utf-8';
         $type = strtolower($type);
         if(isset($this->allowOutputType[$type])) //过滤content_type
             header('Content-Type: '.$this->allowOutputType[$type].'; charset='.$charset);
