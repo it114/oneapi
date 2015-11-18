@@ -35,37 +35,35 @@ class RestController extends ApiController {
         }
         $this->_method = $method;
     }
-
+    
     /**
-     * @access public
-     * @param string $method 方法名
-     * @param array $args 参数
-     * @return mixed
+     * 
+     * @param string $method
+     * @param string $args
      */
-    public function _rest($method,$args) {
-        if( 0 === strcasecmp($method,ACTION_NAME)) {
-            if(method_exists($this,$method.'_'.$this->_method.'_'.$this->_type)) { //read_get_json 
-                $fun  =  $method.'_'.$this->_method.'_'.$this->_type;
-                $this->invokeFunc($fun, $args);
-            }elseif($this->_method == $this->defaultMethod && method_exists($this,$method.'_'.$this->_type) ){//read_json
-                $fun  =  $method.'_'.$this->_type;
-                $this->invokeFunc($fun, $args);
-            }elseif($this->_type == $this->defaultType && method_exists($this,$method.'_'.$this->_method) ){//read_get
-                $fun  =  $method.'_'.$this->_method;
-                $this->invokeFunc($fun, $args);
-            }elseif(method_exists($this,'_empty')) {
-                // 如果定义了_empty操作 则调用
-                $this->_empty($method,$args);
-            }else{
-                trigger_error('unkonwn rest action :'.ACTION_NAME);
-            }
-        } 
+    public function _rest($method,$args='') { 
+        if(method_exists($this,$method.'_'.$this->_method.'_'.$this->_type)) { //read_get_json
+            $fun  =  $method.'_'.$this->_method.'_'.$this->_type;
+            $this->invokeFunc($fun, $args);
+        }elseif($this->_method == $this->defaultMethod && method_exists($this,$method.'_'.$this->_type) ){//read_json
+            $fun  =  $method.'_'.$this->_type;
+            $this->invokeFunc($fun, $args);
+        }elseif($this->_type == $this->defaultType && method_exists($this,$method.'_'.$this->_method) ){//read_get
+            $fun  =  $method.'_'.$this->_method;
+            $this->invokeFunc($fun, $args);
+        }elseif(method_exists($this,'_empty')) {
+            // 如果定义了_empty操作 则调用
+            //$this->_empty($method,$args);
+            echo 'rest method '.$method.' is not exists ';
+        }else{
+            trigger_error('unkonwn rest action :'.ACTION_NAME);
+        }
     }
-
+    
     private function invokeFunc($func,$args) {
         $this->$func($args);
     }
-
+    
     // 发送Http状态信息
     protected function sendHttpStatus($code) {
         static $_status = array(

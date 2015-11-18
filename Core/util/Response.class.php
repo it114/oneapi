@@ -14,10 +14,10 @@ class Response  {
     public static function set($contentType,$encode = 'UTF-8') {
 
         header("Content-Type:{$contentType}; charset={$encode}");
-
+        
         return true;
     }
-
+    
     /**
      * 禁用浏览器缓存
      *

@@ -35,14 +35,10 @@ class Config
             $content =  require $file;
             if(array_key_exists($this->_env, $content)) {
                 $appConfig = $content[$this->_env];
-                if(isset(self::$_configValues)) {
+                if(isset(self::$_configValues)) { 
                     //app中的配置覆盖系统的默认配置不支持二维数组
                     foreach($appConfig as $k=>$v){
-                        if(isset(self::$_configValues[$k])) {
-                            self::$_configValues[$k] = $v;//app配置覆盖系统配置
-                        } else {
-                            //do nothing .
-                        }
+                        self::$_configValues[$k] = $v;//app配置可以覆盖系统配置
                     }
                 } else {
                     self::$_configValues = $appConfig;
