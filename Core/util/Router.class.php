@@ -79,12 +79,12 @@ class Router
                 $this->action    = (isset($uriInfoArray[2]) && $uriInfoArray[2] == true) ? $uriInfoArray[2] : Config::get('url.default_action');
                 
                 //变量重组,将网址(URL)中的参数变量及其值赋值到$_GET全局超级变量数组中
-                if (($totalNum = sizeof($uriInfoArray)) > 4) {
+                if (($totalNum = sizeof($uriInfoArray)) > 4) { //dump($uriInfoArray);
                     for ($i = 3; $i < $totalNum; $i += 2) {
                         if (!isset($uriInfoArray[$i]) || !$uriInfoArray[$i] || !isset($uriInfoArray[$i + 1])) {
                             continue;
                         }
-                        $_GET[$uriInfoArray[$i]] = $uriInfoArray[$i + 1];
+                        $_GET[$uriInfoArray[$i]] = $uriInfoArray[$i + 1];//dump($_GET);
                     }
                 }
             }            

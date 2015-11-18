@@ -26,20 +26,32 @@ class Application {
     }
     
     public function run() {
-        $controller = '\Apps\\'. APP_NAME .'\controller\\'.ucfirst( CONTROLLER_NAME );
-        if(!class_exists($controller)){
-            exit( '404 controller not found !' );
+        if(in_array(strtolower(CONTROLLER_NAME), Config::get('rest_controller'))) {//rest控制器
+            $controller = '\Core\\controller\\RestController';
+        } else {
+            $controller = '\Apps\\'. APP_NAME .'\controller\\'.ucfirst( CONTROLLER_NAME );
+        }
+        //TODO app白名单
+        if(!class_exists($controller)) { 
+            exit(' controller is not exists ');
         }
         $obj = new $controller();
         $action = ACTION_NAME;
-        if( !method_exists($obj, $action) ){
-            exit('action :'.$action.' is not exists ');
+        if(method_exists($obj, '_initActions') ){
+            $obj->_initActions(); //初始化白名单
         }
-        $obj->_initActions(); //初始化白名单
-        $obj->_valid_action($action);//验证 操作是否 在白名单
-        $obj->_initAuth();//权限
-        $obj ->$action();//执行action
-          
+        if(method_exists($obj, '_initAuth') ){
+            $obj->_initAuth(); //初始化白名单
+        }
+        if(!method_exists($obj, $action) ){ 
+            if(method_exists($obj, '_rest') ){//是否是rest的controller
+                $obj->{'_rest'}($action);
+            } else if(method_exists($obj, '_empty')) {
+                $obj->{'_empty'}();
+            }
+        } else {
+            $obj ->$action();//执行action 
+        } 
     } 
     
     protected function _initEnv(){

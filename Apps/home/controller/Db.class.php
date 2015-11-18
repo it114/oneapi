@@ -11,7 +11,7 @@ class Db extends \Core\controller\ApiController{
         
 	}
 	
-	public function get_user(){
+	public function index(){
 	  $m = model('user');
 	  $res = $m->where(array('id'=>1))->find();
 	  dump($res);
