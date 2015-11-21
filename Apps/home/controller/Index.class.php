@@ -13,7 +13,7 @@ class Index extends ApiController{
 	}
 	
 	public function index(){
-	   echo 'hello';
+	   echo 'hello 11';
 	}
 	
 	

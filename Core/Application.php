@@ -19,15 +19,17 @@ class Application {
         //加载通用函数
         Loader::loadFile(ROOT_PATH.'Core/Common.func.php');
         //路由,默认r=app/controller/action形式
-
+        
         $router = new \Core\util\Router(Config::get('url.url_type'));
         $router->start();
         $config->loadAppConfig();
     }
     
     public function run() {
+        $coreRest = false;
         if(in_array(strtolower(CONTROLLER_NAME), Config::get('rest_controller'))) {//rest控制器
             $controller = '\Core\\controller\\RestController';
+            $coreRest = true;
         } else {
             $controller = '\Apps\\'. APP_NAME .'\controller\\'.ucfirst( CONTROLLER_NAME );
         }
@@ -36,7 +38,12 @@ class Application {
             exit(' controller is not exists ');
         }
         $obj = new $controller();
-        $action = ACTION_NAME;
+        if($coreRest) {
+            $action = '';//走内置的自动完成方法CRUD
+        } else {
+            $action = ACTION_NAME;
+        }
+        dump($_GET);
         if(method_exists($obj, '_initActions') ){
             $obj->_initActions(); //初始化白名单
         }

@@ -15,7 +15,7 @@ class Router
     
     public function start(){
         if(empty($this->routeType)) {//默认兼容模式
-         echo '1';   $this->routeType = 1;
+            $this->routeType = 1;
         }
         if($this->routeType == 1) {//r=app/controller/action形式
            $route = Request::getGet('r'); 
@@ -38,7 +38,7 @@ class Router
             $script_name = Request::getScriptUrl();
             //获取完整的路径，包含"?"之后的字符串/demo/index.php/group/module... ,eg :/oneapi/index.php/home/db/index
             $uri = Request::getRequestUri();
-            
+            //dump($uri);
             //去除url包含的当前文件的路径信息,只截取文件后的参数
             if ( $uri && @strpos($uri,$script_name,0) !== false ){
                 $uri = substr($uri, strlen($script_name));///home/db/index
@@ -84,11 +84,12 @@ class Router
                         if (!isset($uriInfoArray[$i]) || !$uriInfoArray[$i] || !isset($uriInfoArray[$i + 1])) {
                             continue;
                         }
-                        $_GET[$uriInfoArray[$i]] = $uriInfoArray[$i + 1];//dump($_GET);
+                        $_GET[$uriInfoArray[$i]] = $uriInfoArray[$i + 1];
                     }
                 }
             }            
         }
+        
         //统一处理
         if(!$this->app) {//app
             $this->app = Config::get('url.default_app');
@@ -103,7 +104,7 @@ class Router
         if( !defined('APP_NAME') ) define('APP_NAME', strtolower($this->app)); 
         if( !defined('CONTROLLER_NAME') ) define('CONTROLLER_NAME', ucfirst($this->controller));
         if( !defined('ACTION_NAME') ) define('ACTION_NAME', $this->action);
-        
+        //echo APP_NAME.','.CONTROLLER_NAME.','.ACTION_NAME; dump($_GET);
     }
     
 }

@@ -2,6 +2,7 @@
 namespace Core\controller;
 use Core\controller\ApiController;
 use Core\util\Config;
+use Core\util\Request;
 class RestController extends ApiController {
     // 当前请求类型
     protected   $_method        =   ''; 
@@ -51,6 +52,17 @@ class RestController extends ApiController {
         }elseif($this->_type == $this->defaultType && method_exists($this,$method.'_'.$this->_method) ){//read_get
             $fun  =  $method.'_'.$this->_method;
             $this->invokeFunc($fun, $args);
+        }elseif($method == '') {//CURD的rest方法
+            $opts = $this->_parseOptions();
+            if($this->_method =='post') {//添加
+                $this->_create($opts);
+            }elseif ($this->_method == 'get') {//查询
+                $this->_read($opts);
+            }elseif ($this->_method == 'delete') {//删除操作
+                $this->_delete($opts);
+            }elseif ($this->_method == 'put'){//更新操作
+                $this->_update($opts);
+            }
         }elseif(method_exists($this,'_empty')) {
             // 如果定义了_empty操作 则调用
             //$this->_empty($method,$args);
@@ -60,6 +72,82 @@ class RestController extends ApiController {
         }
     }
     
+    //解析filter参数
+    private function _parseOptions() {
+        $opts = array();
+        if(empty(Request::getGet('filter')) || !isset(Request::getGet('filter'))) {
+            return $opts;
+        }
+        
+        $filter = Request::getGet('filter');
+        if(false === strpos($filter,'&')) {//filter中不含有 & 
+            if(true === strpos($filter, '=')) {
+                list($k,$v) = explode('=', $filter);
+                $opts[$k] =  $v;
+            }
+        } else {
+            $tmp = explode('&', $filter);
+            foreach ($tmp as $v) {
+                list($k,$v) = explode('=', $filter);
+                $opts[$k] =  $v;
+            }
+        }
+        return $opts;
+    }
+    
+    //*******************REST的CRUD************************
+    //*****************************************************
+    private function _create($opts) {
+        $model = model(CONTROLLER_NAME);
+        if ($vo = $model->create()) {
+            $res = $model->add();
+            if ($res !== false)        {
+                $this->response(array('msg'=>'suc','code'=>1,'data'=>array()));
+            } else {
+                $this->response(array('msg'=>'fail','code'=>0,'data'=>array()));
+            }
+        } else {
+           $this->response(array('msg'=>$model->getError(),'code'=>-1,'data'=>array()));
+        }
+    }
+    
+    private function _put($opts) {
+        $model = model(CONTROLLER_NAME);
+        if ($vo = $model->create()) {
+            $res = $model->save();
+            if ($res !== false) {
+                $this->response(array('msg'=>'suc','code'=>1,'data'=>array()));
+            } else {
+                $this->response(array('msg'=>'fail','code'=>0,'data'=>array()));
+            }
+        } else {
+            $this->response(array('msg'=>$model->getError(),'code'=>-1,'data'=>array()));
+        }
+    }
+    
+    private function _delete($opts) {
+        if (is_array($opts)  && !key_exists('id', $opts)) {//主键需要是id，
+            $model = model(CONTROLLER_NAME);
+            $result = $model->delete($$opts['id']);
+            if (false !== $result) {
+                $this->response(array('msg'=>'suc','code'=>1,'data'=>array()));
+            } else {
+                $this->response(array('msg'=>'fail','code'=>0,'data'=>array()));
+            }
+        } else {
+            $this->response(array('msg'=>'id error','code'=>0,'data'=>array()));
+        }
+    }
+    
+    
+    private function _read($opts) {
+        if (is_array($opts)  && !key_exists('where', $opts)) {//主键需要是id，
+            
+        }
+    }
+    
+    //*****************************************************
+    //*******************REST的CRUD************************
     private function invokeFunc($func,$args) {
         $this->$func($args);
     }
@@ -144,7 +232,7 @@ class RestController extends ApiController {
         //header('Content-Length: ' . strlen($data));
         return $data;
     }
-
+    
     /**
      * 设置页面输出的CONTENT_TYPE和编码
      * @access public
@@ -159,7 +247,7 @@ class RestController extends ApiController {
         if(isset($this->allowOutputType[$type])) //过滤content_type
             header('Content-Type: '.$this->allowOutputType[$type].'; charset='.$charset);
     }
-
+    
     /**
      * 输出返回数据
      * @access protected

@@ -13,7 +13,7 @@ class Fake extends ApiController{
 	}
 	
 	public function index(){
-	   echo 'hello';
+	   echo 'hello index';
 	}
 	
 	

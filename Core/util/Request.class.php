@@ -1,10 +1,6 @@
 <?php
 namespace Core\util;
-/**
- * @author shooke
- * http请求处理类
- * 接收http请求各种处理,如ip地址，端口，$_GET $_POST $_COOKIE $_REQUEST $_SERVER等
- */
+
 class Request{
 	/**
 	 * 访问的端口号
@@ -99,7 +95,7 @@ class Request{
 	 */
 	public static function getPost($name = null, $defaultValue = null) {
 		if ($name === null) return $_POST;
-		return isset($_POST[$name]) ? $_POST[$name] : $defaultValue;
+		return isset($_POST[$name]) ? $_POST[$name] :$defaultValue;
 	}
 	
 	/**
@@ -111,7 +107,7 @@ class Request{
 	 */
 	public static function getGet($name = null, $defaultValue = null) {
 		if ($name === null) return $_GET;
-		return (isset($_GET[$name])) ? $_GET[$name] : $defaultValue;
+		return (isset($_GET[$name])) ? $_GET[$name] :$defaultValue;
 	}
 	
 	/**
@@ -150,7 +146,7 @@ class Request{
 	 */
 	public static function getServer($name = null, $defaultValue = null) {
 		if ($name === null) return $_SERVER;
-		return (isset($_SERVER[$name])) ? $_SERVER[$name] : $defaultValue;
+		return (isset($_SERVER[$name])) ? $_SERVER[$name] :  $defaultValue;
 	}
 	
 	/**
