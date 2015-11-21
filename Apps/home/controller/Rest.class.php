@@ -18,7 +18,7 @@ class Rest extends \Core\controller\RestController{
 	  echo '<br><h2>查询数据库</h2><br>';
 	  $m = model('user');
 	  $res = $m->where(array('id'=>$_GET['id']))->find();
-	  dump($res);
+	  //dump($res);
 	}
 	
 	

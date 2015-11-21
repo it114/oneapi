@@ -8,8 +8,9 @@ $retConfig = array(
             'default_url_suffix'=>'.json',
             'url_type'=>2,//url类型 1、兼容模式，类似r=app/controller/action形式；2、pathinfo的rest风格格式index.php/app/controller/action
         ),       
-        'token_on' => true,//是否开启表单令牌验证
+        'token_on' => false,//是否开启表单令牌验证
         'cache'=>array(
+            'default_get_cache_time' =>300,//默认get请求的数据缓存时间
             'default_db_cache_time'=>300,//数据库读取数据默认缓存 5分钟
             'data_cache_type'=> 'File' ,//数据缓存类型,支持:File|Db|Apc|Memcache,
             'data_cache_path'=> DATA_CACHE_PATH,//缓存目录  缓存路径设置 (仅对File方式缓存有效)

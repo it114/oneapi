@@ -43,7 +43,7 @@ class Application {
         } else {
             $action = ACTION_NAME;
         }
-        dump($_GET);
+        
         if(method_exists($obj, '_initActions') ){
             $obj->_initActions(); //初始化白名单
         }

@@ -578,7 +578,7 @@ class Model {
             $cache  =   $options['cache'];
             $key    =   is_string($cache['key'])?$cache['key']:md5(serialize($options));
             $data   =   cache($key,'',$cache);
-            if(false !== $data){
+            if(false !== $data){//echo ' cached ';
                 return $data;
             }
         }        
@@ -633,7 +633,7 @@ class Model {
     protected function _parseOptions($options=array()) {
         if(is_array($options))
             $options =  array_merge($this->options,$options);
-
+        
         if(!isset($options['table'])){
             // 自动获取表名
             $options['table']   =   $this->getTableName();
@@ -642,7 +642,7 @@ class Model {
             // 指定数据表 则重新获取字段列表 但不支持类型检测
             $fields             =   $this->getDbFields();
         }
-
+        
         // 数据表别名
         if(!empty($options['alias'])) {
             $options['table']  .=   ' '.$options['alias'];
@@ -653,9 +653,9 @@ class Model {
         // 字段类型验证
         if(isset($options['where']) && is_array($options['where']) && !empty($fields) && !isset($options['join'])) {
             // 对数组查询条件进行字段类型检查
-            foreach ($options['where'] as $key=>$val){
+            foreach ($options['where'] as $key=>$val) {
                 $key            =   trim($key);
-                if(in_array($key,$fields,true)){
+                if(in_array($key,$fields,true)) {
                     if(is_scalar($val)) {
                         $this->_parseType($options['where'],$key);
                     }

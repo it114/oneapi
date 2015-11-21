@@ -16,3 +16,27 @@ http://framework.zend.com/manual/1.12/zh/coding-standard.coding-style.html
 a、命名空间要与路径相关联
 b、类名要大写，并以.class.php 结尾
 c、
+
+
+rest 接口中的crud~, 接口的数据使用原始的json格式上传字符流
+1、默认的话如果app模块下面的rest controller如果配置，就必定走rest模式，忽略 可能的action参数。
+2、内置模型和控制器
+put（更新）:
+例如：request body
+{"username":"user-test","password":"pwd","email":"email@fff.co","id":3}
+更新生产的语句：UPDATE `qj_user` SET `username`='user-test',`password`='pwd',`email`='email@fff.co' WHERE `id` = 3{
+
+get（查询） : http://127.0.0.1/oneapi/index.php/home/user/?filter={%22where%22:{%22id%22:1,%22sex%22:0}}
+
+delete（删除）:http://127.0.0.1/oneapi/index.php/home/user/?filter={%22where%22:{%22id%22:1,%22sex%22:0}}即可删除
+
+post(创建):http://127.0.0.1/oneapi/index.php/home/user/ form-data  x-www-urlencoded 格式上传数据即可创建成功。
+例如：request body
+{"username":"user-test-22","password":"password","email":"email@fff.co","tel":"15800000000"}
+sql:
+INSERT INTO `qj_user` (`username`,`password`,`email`,`tel`) VALUES ('user-test-22','password','email@fff.co','15800000000')
+
+
+
+所有的请求都可以加上一个filter参数。
+

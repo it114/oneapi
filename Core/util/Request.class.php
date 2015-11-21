@@ -494,6 +494,10 @@ class Request{
 		return self::$_language;
 	}
 	
+	public static function getBody() {
+	    $body = @file_get_contents("php://input");
+	    return $body;
+	}
 	
 	
 	/**

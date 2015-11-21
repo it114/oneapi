@@ -28,9 +28,9 @@ class RestController extends ApiController {
             $this->_type   =  'json';
         }elseif(!in_array($suffix,$this->allowType)) {
             $this->_type   = 'json';
-        }
+        } 
         // 请求方式检测
-        $method  =  strtolower(REQUEST_METHOD);
+        $method  =  strtolower(Request::getRequestMethod());
         if(!in_array($method,$this->allowMethod)) {
             $method = $this->defaultMethod;
         }
@@ -53,7 +53,8 @@ class RestController extends ApiController {
             $fun  =  $method.'_'.$this->_method;
             $this->invokeFunc($fun, $args);
         }elseif($method == '') {//CURD的rest方法
-            $opts = $this->_parseOptions();
+            
+            $opts = $this->_parseQuery();
             if($this->_method =='post') {//添加
                 $this->_create($opts);
             }elseif ($this->_method == 'get') {//查询
@@ -72,35 +73,75 @@ class RestController extends ApiController {
         }
     }
     
+    //把请求体中的json转换成为post的key-value
+    private function _parseData() {
+        $body = Request::getBody(); 
+        if($body) {
+            $body = json_decode($body,true);
+            foreach ($body as $k=>$v) {
+                $_POST[$k] = $v;
+            }
+        }
+    }
+    
     //解析filter参数
-    private function _parseOptions() {
+    private function  _parseQuery()  {
         $opts = array();
-        if(empty(Request::getGet('filter')) || !isset(Request::getGet('filter'))) {
+        if(empty(Request::getGet('filter')) || empty(Request::getGet('filter'))) {
             return $opts;
         }
-        
-        $filter = Request::getGet('filter');
-        if(false === strpos($filter,'&')) {//filter中不含有 & 
-            if(true === strpos($filter, '=')) {
-                list($k,$v) = explode('=', $filter);
-                $opts[$k] =  $v;
-            }
-        } else {
-            $tmp = explode('&', $filter);
-            foreach ($tmp as $v) {
-                list($k,$v) = explode('=', $filter);
-                $opts[$k] =  $v;
+        $filter  = Request::getGet('filter');
+        if($filter) {
+            $filter = json_decode($filter,true);
+            if($filter) {
+                foreach ($filter as $k=>$v) {
+                    if($k == 'where' ) {//where  支持数组形式传递
+                        $whereArr = array();
+                        foreach ($v as $kk=>$vv) { 
+                            $whereArr[$kk] = $vv;
+                        }
+                        $opts[$k] = $whereArr;
+                    } else if($k == 'limit') {
+                         $opts[$k] = $v;
+                    }
+                }
             }
         }
+       
         return $opts;
     }
+    
+//     private function _parseOptions() {
+//         $opts = array();
+//         if(empty(Request::getGet('filter')) || empty(Request::getGet('filter'))) {
+//              return $opts;
+//         }
+        
+//         $filter = Request::getGet('filter');echo $filter;
+//         if(false === strpos($filter,'&')) {//filter中不含有 & 
+//             if(true === strpos($filter, '=')) {
+//                 list($k,$v) = explode('=', $filter);
+//                 $opts[$k] =  $v;
+//             }
+//         } else {
+//             $tmp = explode('&', $filter);
+//             foreach ($tmp as $v) {
+//                 list($k,$v) = explode('=', $filter);
+//                 $opts[$k] =  $v;
+//             }
+//         }print_r($opts);
+//         return $opts;
+//     }
     
     //*******************REST的CRUD************************
     //*****************************************************
     private function _create($opts) {
+        $this->_parseData();
         $model = model(CONTROLLER_NAME);
         if ($vo = $model->create()) {
+            //dump($vo);
             $res = $model->add();
+            echo $model->getLastSql();
             if ($res !== false)        {
                 $this->response(array('msg'=>'suc','code'=>1,'data'=>array()));
             } else {
@@ -111,10 +152,13 @@ class RestController extends ApiController {
         }
     }
     
-    private function _put($opts) {
+    private function _update($opts) { 
+        $this->_parseData();
+        //dump($_POST);
         $model = model(CONTROLLER_NAME);
         if ($vo = $model->create()) {
             $res = $model->save();
+            //echo $model->getLastSql();
             if ($res !== false) {
                 $this->response(array('msg'=>'suc','code'=>1,'data'=>array()));
             } else {
@@ -126,23 +170,41 @@ class RestController extends ApiController {
     }
     
     private function _delete($opts) {
-        if (is_array($opts)  && !key_exists('id', $opts)) {//主键需要是id，
+        if (is_array($opts))   { 
             $model = model(CONTROLLER_NAME);
-            $result = $model->delete($$opts['id']);
+            if(key_exists('where', $opts)) {
+                $model->where($opts['where']);
+            } 
+            $result = $model->delete($opts); 
+            //echo $model->getLastSql();
             if (false !== $result) {
-                $this->response(array('msg'=>'suc','code'=>1,'data'=>array()));
+               $this->response(array('msg'=>'suc','code'=>1,'data'=>array()));
             } else {
-                $this->response(array('msg'=>'fail','code'=>0,'data'=>array()));
+               $this->response(array('msg'=>'fail','code'=>0,'data'=>array()));
             }
         } else {
-            $this->response(array('msg'=>'id error','code'=>0,'data'=>array()));
+            $this->response(array('msg'=>'paramter error','code'=>0,'data'=>array()));
         }
     }
     
     
     private function _read($opts) {
-        if (is_array($opts)  && !key_exists('where', $opts)) {//主键需要是id，
-            
+        if (is_array($opts)) {
+            $opts['cache'] = Config::get('get.default_get_cache_time',300);//设置get请求的数据缓存时间
+            $model = model(CONTROLLER_NAME);
+            if(key_exists('where', $opts)) {
+                $model->where($opts['where']);
+            }
+            $result = $model->select($opts);
+            //echo $model->getLastSql();
+            //dump($result);
+            if (false !== $result) {
+                $this->response(array('msg'=>'suc','code'=>1,$result));
+            } else {
+                $this->response(array('msg'=>'fail','code'=>0,'data'=>array()));
+            }
+        } else {
+            $this->response(array('msg'=>'paramter fail','code'=>0,'data'=>array()));
         }
     }
     
@@ -217,7 +279,7 @@ class RestController extends ApiController {
      * @param String $type 返回类型 JSON XML
      * @return string
      */
-    protected function encodeData($data,$type='') {
+    protected function encodeData($data,$type='json') {
         if(empty($data))  return '';
         if('json' == $type) {
             // 返回JSON数据格式到客户端 包含状态信息
@@ -256,7 +318,7 @@ class RestController extends ApiController {
      * @param integer $code HTTP状态
      * @return void
      */
-    protected function response($data,$type='',$code=200) {
+    protected function response($data,$type='json',$code=200) {
         $this->sendHttpStatus($code);
         exit($this->encodeData($data,strtolower($type)));
     }
