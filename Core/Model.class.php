@@ -98,7 +98,7 @@ class Model {
         // 当前模型有独立的数据库连接信息
         $this->db(0,empty($this->connection)?$connection:$this->connection,true);
     }
-
+    
     /**
      * 自动检测数据表信息
      * @access protected
@@ -167,7 +167,7 @@ class Model {
             cacheWithFile(strtolower($db.'.'.$this->tablePrefix.$this->name),$this->fields,'_fields');
         }
     }
-
+    
     /**
      * 设置数据对象的值
      * @access public
@@ -571,14 +571,15 @@ class Model {
         } elseif(false === $options){ // 用于子查询 不查询只返回SQL
         	$options['fetch_sql'] = true;
         }
-        // 分析表达式
+        //分析表达式
         $options    =  $this->_parseOptions($options);
         // 判断查询缓存
         if(isset($options['cache'])){
             $cache  =   $options['cache'];
+            $cache = '';
             $key    =   is_string($cache['key'])?$cache['key']:md5(serialize($options));
             $data   =   cache($key,'',$cache);
-            if(false !== $data){//echo ' cached ';
+            if(false !== $data){ 
                 return $data;
             }
         }        
@@ -590,7 +591,7 @@ class Model {
             if(is_string($resultSet)){
                 return $resultSet;
             }
-
+            
             $resultSet  =   array_map(array($this,'_read_data'),$resultSet);
             $this->_after_select($resultSet,$options);
             if(isset($options['index'])){ // 对数据集进行索引
@@ -606,7 +607,7 @@ class Model {
                 $resultSet  =   $cols;
             }
         }
-
+        
         if(isset($cache)){
             cache($key,$resultSet,$cache);
         }

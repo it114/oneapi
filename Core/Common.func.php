@@ -92,8 +92,8 @@ function cache($name,$value='',$options=null) {
  * @param unknown $name
  * @param unknown $value
  */
-function cacheWithFile($name,$value='',$dir = '' ) {
-    $base_dir = STORAGE_PATH.'cache'.DIRECTORY_SEPARATOR.'data'.DIRECTORY_SEPARATOR.$dir;
+function cacheWithFile($name,$value='',$dir = '/noexpire' ) {
+    $base_dir = STORAGE_PATH.'cache'.DIRECTORY_SEPARATOR.'data'.$dir;
     cache($name,$value,array('type'=>'File','tmp'=>$base_dir));
 }
 

@@ -107,31 +107,8 @@ class RestController extends ApiController {
                 }
             }
         }
-       
         return $opts;
     }
-    
-//     private function _parseOptions() {
-//         $opts = array();
-//         if(empty(Request::getGet('filter')) || empty(Request::getGet('filter'))) {
-//              return $opts;
-//         }
-        
-//         $filter = Request::getGet('filter');echo $filter;
-//         if(false === strpos($filter,'&')) {//filter中不含有 & 
-//             if(true === strpos($filter, '=')) {
-//                 list($k,$v) = explode('=', $filter);
-//                 $opts[$k] =  $v;
-//             }
-//         } else {
-//             $tmp = explode('&', $filter);
-//             foreach ($tmp as $v) {
-//                 list($k,$v) = explode('=', $filter);
-//                 $opts[$k] =  $v;
-//             }
-//         }print_r($opts);
-//         return $opts;
-//     }
     
     //*******************REST的CRUD************************
     //*****************************************************
@@ -140,6 +117,8 @@ class RestController extends ApiController {
         $model = model(CONTROLLER_NAME);
         if ($vo = $model->create()) {
             //dump($vo);
+            $vo['createTime'] = TIMESTAMP;//添加创建时间
+            $vo['status'] = 1;//状态正常
             $res = $model->add();
             echo $model->getLastSql();
             if ($res !== false)        {
@@ -157,6 +136,7 @@ class RestController extends ApiController {
         //dump($_POST);
         $model = model(CONTROLLER_NAME);
         if ($vo = $model->create()) {
+            $vo['updateTime'] = TIMESTAMP;//添加更新时间
             $res = $model->save();
             //echo $model->getLastSql();
             if ($res !== false) {
@@ -190,16 +170,16 @@ class RestController extends ApiController {
     
     private function _read($opts) {
         if (is_array($opts)) {
-            $opts['cache'] = Config::get('get.default_get_cache_time',300);//设置get请求的数据缓存时间
+            $opts['cache'] = array('type'=>Config::get('cache.data_cache_type'),'expire'=>Config::get('cache.default_get_cache_time',300));//设置get请求的数据缓存时间
             $model = model(CONTROLLER_NAME);
             if(key_exists('where', $opts)) {
                 $model->where($opts['where']);
             }
             $result = $model->select($opts);
             //echo $model->getLastSql();
-            //dump($result);
+            print_r($result);
             if (false !== $result) {
-                $this->response(array('msg'=>'suc','code'=>1,$result));
+                //$this->response(array('msg'=>'suc','code'=>1,'data'=>$result));
             } else {
                 $this->response(array('msg'=>'fail','code'=>0,'data'=>array()));
             }

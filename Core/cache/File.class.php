@@ -24,9 +24,9 @@ class File extends Cache {
         if(!empty($options)) {
             $this->options =  $options;
         }
-        $this->options['temp']      =   !empty($options['temp'])?   $options['temp']    :   Config::get('data_cache_path');
-        $this->options['prefix']    =   isset($options['prefix'])?  $options['prefix']  :   Config::get('data_cache_prefix');
-        $this->options['expire']    =   isset($options['expire'])?  $options['expire']  :   Config::get('default_db_cache_time');
+        $this->options['temp']      =   !empty($options['temp'])?   $options['temp']    :   Config::get('cache.data_cache_path');
+        $this->options['prefix']    =   isset($options['prefix'])?  $options['prefix']  :   Config::get('cache.data_cache_prefix');
+        $this->options['expire']    =   isset($options['expire'])?  $options['expire']  :   Config::get('cache.default_cache_time');
         $this->options['length']    =   isset($options['length'])?  $options['length']  :   0;
         if(substr($this->options['temp'], -1) != '/')    $this->options['temp'] .= '/';
         $this->init();
@@ -43,7 +43,7 @@ class File extends Cache {
             mkdir($this->options['temp']);
         }
     }
-
+    
     /**
      * 取得变量的存储文件名
      * @access private
@@ -52,10 +52,10 @@ class File extends Cache {
      */
     private function filename($name) {
         $name	=	md5($name);
-        if(Config::get('db_cache_subdir')) {
+        if(Config::get('cache.db_cache_subdir')) {
             // 使用子目录
             $dir   ='';
-            for($i=0;$i<Config::get('data_path_level');$i++) {
+            for($i=0;$i<Config::get('cache.data_path_level');$i++) {
                 $dir	.=	$name{$i}.'/';
             }
             if(!is_dir($this->options['temp'].$dir)) {
@@ -124,7 +124,7 @@ class File extends Cache {
         }
         $filename   =   $this->filename($name);
         $data   =   serialize($value);
-        if( Config::get('data_cache_compress') && function_exists('gzcompress')) {
+        if( Config::get('cache.data_cache_compress') && function_exists('gzcompress')) {
             //数据压缩
             $data   =   gzcompress($data,3);
         }
